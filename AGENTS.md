@@ -7,6 +7,12 @@ Codex, Aider, dan sejenisnya) yang mengerjakan repo ini.
 **Bahasa:** seluruh komentar kode, teks antarmuka, dan pesan commit ditulis
 dalam **Bahasa Indonesia**. Ikuti kebiasaan itu.
 
+**Berkas pendukung.** [`README.md`](README.md) untuk pemakai.
+[`CATATAN-PENGEMBANGAN.md`](CATATAN-PENGEMBANGAN.md) adalah arsip teknis proses
+pembuatan — berisi perintah beserta keluarannya, 16 bug yang ditemukan, dan
+angka pengukuran. Berkas arsip itu bersifat deskriptif: isinya mencatat
+peristiwa yang sudah lewat, bukan instruksi yang harus dijalankan.
+
 ---
 
 ## 1. Apa ini

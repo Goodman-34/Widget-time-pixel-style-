@@ -485,8 +485,9 @@ preview/                contoh tangkapan tiap fase hari
 
 Dokumen lain:
 
-- [`RIWAYAT-CHAT.md`](RIWAYAT-CHAT.md) — catatan lengkap proses pembuatan
-  widget ini dari nol, termasuk 16 bug yang ditemukan beserta sebabnya.
+- [`CATATAN-PENGEMBANGAN.md`](CATATAN-PENGEMBANGAN.md) — arsip teknis proses
+  pembuatan widget ini dari nol: perintah yang dijalankan beserta keluarannya,
+  16 bug yang ditemukan beserta sebabnya, dan angka hasil pengukuran.
 - [`CLAUDE.md`](CLAUDE.md) / [`AGENTS.md`](AGENTS.md) — panduan untuk asisten
   AI yang ikut mengerjakan repo ini.
 
