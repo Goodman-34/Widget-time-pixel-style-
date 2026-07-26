@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;" />
+  <title>Pixel Drive Clock</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="widget">
+    <canvas id="scene" width="256" height="144"></canvas>
+
+    <div id="tools">
+      <button id="btn-settings" title="Pengaturan (klik kanan)">&#9881;</button>
+      <button id="btn-min" title="Sembunyikan ke tray">&#8211;</button>
+      <button id="btn-close" title="Tutup">&#10005;</button>
+    </div>
+
+    <div id="panel" hidden>
+      <header>
+        <span>PENGATURAN</span>
+        <button id="panel-close" title="Tutup">&#10005;</button>
+      </header>
+
+      <div class="grp">
+        <div class="lbl">Sumber waktu</div>
+        <div class="seg" id="seg-mode">
+          <button data-mode="live">Realtime</button>
+          <button data-mode="manual">Manual</button>
+          <button data-mode="demo">Demo</button>
+        </div>
+      </div>
+
+      <div class="grp" id="grp-manual" hidden>
+        <div class="lbl">Ubah waktu <b id="lbl-manual">12:00</b></div>
+        <input type="range" id="rng-manual" min="0" max="1439" step="1" value="720" />
+      </div>
+
+      <div class="grp" id="grp-demo" hidden>
+        <div class="lbl">Kecepatan demo <b id="lbl-demo">60 s / hari</b></div>
+        <input type="range" id="rng-demo" min="10" max="240" step="5" value="60" />
+      </div>
+
+      <div class="grp" id="grp-tz">
+        <div class="lbl">Zona waktu</div>
+        <select id="sel-tz"></select>
+      </div>
+
+      <div class="grp">
+        <div class="lbl">Tampilan jam</div>
+        <div class="seg" id="seg-fmt">
+          <button data-h12="0">24 jam</button>
+          <button data-h12="1">12 jam</button>
+        </div>
+        <label class="chk"><input type="checkbox" id="chk-sec" /> Detik</label>
+        <label class="chk"><input type="checkbox" id="chk-date" /> Tanggal</label>
+        <label class="chk"><input type="checkbox" id="chk-phase" /> Label fase hari</label>
+        <label class="chk"><input type="checkbox" id="chk-panel" /> Panel gelap di belakang jam</label>
+      </div>
+
+      <div class="grp">
+        <div class="lbl">Ukuran widget</div>
+        <div class="seg" id="seg-scale">
+          <button data-scale="1">1x</button>
+          <button data-scale="2">2x</button>
+          <button data-scale="3">3x</button>
+          <button data-scale="4">4x</button>
+        </div>
+      </div>
+
+      <div class="grp">
+        <div class="lbl">Kecepatan mobil <b id="lbl-speed">55</b></div>
+        <input type="range" id="rng-speed" min="0" max="100" step="1" value="55" />
+      </div>
+
+      <div class="grp">
+        <div class="lbl">Kehalusan animasi</div>
+        <div class="seg" id="seg-fps">
+          <button data-fps="15">15</button>
+          <button data-fps="30">30</button>
+          <button data-fps="60">60</button>
+        </div>
+        <label class="chk"><input type="checkbox" id="chk-eco" /> Hemat daya saat tidak aktif</label>
+      </div>
+
+      <div class="grp el-only">
+        <div class="lbl">Transparansi <b id="lbl-op">100%</b></div>
+        <input type="range" id="rng-op" min="35" max="100" step="1" value="100" />
+        <label class="chk"><input type="checkbox" id="chk-top" /> Selalu di atas jendela lain</label>
+        <label class="chk"><input type="checkbox" id="chk-auto" /> Jalan otomatis saat Windows menyala</label>
+        <label class="chk"><input type="checkbox" id="chk-lowpower" /> Mode hemat RAM (matikan proses GPU)</label>
+        <div class="hint">Mode hemat RAM berlaku setelah widget dijalankan ulang.
+          Matikan saja kalau tampilan jadi bermasalah.</div>
+      </div>
+
+      <div class="grp">
+        <button id="btn-reset" class="wide">Kembalikan ke bawaan</button>
+        <div class="hint" id="hint">Geser widget dengan menyeret langsung gambarnya.</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/font.js"></script>
+  <script src="js/sprites.js"></script>
+  <script src="js/palette.js"></script>
+  <script src="js/pixel.js"></script>
+  <script src="js/scene.js"></script>
+  <script src="js/clock.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

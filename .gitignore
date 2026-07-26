@@ -1,0 +1,15 @@
+# --- hasil build & dependensi (jangan pernah masuk repo) ---
+node_modules/
+dist/
+
+# --- toolchain portabel yang dipakai saat pengembangan (~157 MB) ---
+.tools/
+
+# --- ikon hasil generate; dibuat ulang oleh `npm run icon` ---
+build/icon.png
+
+# --- lain-lain ---
+*.log
+Thumbs.db
+Desktop.ini
+.DS_Store

@@ -1,0 +1,22 @@
+# Normalkan akhir baris supaya diff tidak berisik saat dibuka di OS lain.
+* text=auto eol=lf
+
+# Skrip Windows harus tetap CRLF supaya bisa dijalankan
+*.ps1   text eol=crlf
+*.cmd   text eol=crlf
+*.bat   text eol=crlf
+
+# Berkas biner: jangan diutak-atik Git
+*.png   binary
+*.ico   binary
+*.exe   binary
+*.7z    binary
+*.zip   binary
+
+# Sprite ASCII sangat bergantung pada panjang baris yang persis.
+# Tandai sebagai teks biasa supaya tidak pernah dianggap biner.
+*.js    text
+*.json  text
+*.md    text
+*.html  text
+*.css   text
