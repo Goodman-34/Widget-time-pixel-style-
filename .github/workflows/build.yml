@@ -55,6 +55,29 @@ jobs:
           # ditandatangani secara digital.
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
 
+      # Artefak ekstra untuk pemakai Windows 7 (dan 8/8.1): Electron 23 ke atas
+      # menghapus dukungan OS tersebut, sehingga rilis utama (Electron 43) tidak
+      # bisa berjalan di sana. Versi terakhir yang masih mendukung Windows 7
+      # adalah Electron 22 - rilis penutupnya 22.3.27 (Chromium 108, Node 16).
+      #
+      # Konsekuensi yang disadari: Chromium 108 sudah tidak menerima patch
+      # keamanan lagi (EOL sejak akhir 2023). Ini bisa diterima karena widget
+      # ini 100% offline - tidak pernah memuat konten dari jaringan, tidak ada
+      # navigasi keluar (setWindowOpenHandler menolak semuanya).
+      #
+      # -c.electronVersion menimpa versi Electron dari devDependencies hanya
+      # untuk langkah ini; electron-builder mengunduh sendiri biner 22.3.27.
+      # Hanya target portable yang dibuat (-c.nsis=null membuang konfigurasi
+      # NSIS) supaya cuma ada SATU artefak legacy, dan artifactName diberi
+      # akhiran -legacy-win7 agar tidak menimpa portable utama di dist/.
+      # Pola dist/*.exe pada langkah artifact dan Releases di bawah otomatis
+      # ikut membawa berkas ini.
+      - name: Bangun versi legacy Windows 7 (Electron 22)
+        run: npx electron-builder --win portable -c.electronVersion=22.3.27 -c.portable.artifactName='PixelDriveClock-${version}-legacy-win7.exe' -c.nsis=null --publish never
+        env:
+          # Sama seperti build utama: tanpa penandatanganan digital.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
       - name: Tampilkan hasil
         shell: pwsh
         run: Get-ChildItem dist -Filter *.exe | Select-Object Name, @{n='MB';e={[math]::Round($_.Length/1MB,2)}}

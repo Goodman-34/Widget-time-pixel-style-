@@ -72,6 +72,16 @@
     this.shoot = null;
     this.shootTimer = 6;
 
+    // fitur klik mobil (kedipan -> nitro -> mogok -> diperbaiki)
+    this.ev = { phase: 'idle', t: 0, breakDur: 0 };
+    this.evSpeed = null;             // kecepatan efektif, dihaluskan antar fase
+    this.steam = [];
+    this.steamTimer = 0;
+
+    // mobil lalu lintas dari arah berlawanan
+    this.traffic = [];
+    this.trafficTimer = 4;
+
     this._initProps();
   }
 
@@ -558,6 +568,16 @@
 
     one('car', S.CAR);
     many('rims', S.RIMS);
+    many('traffic', S.TRAFFIC);
+    many('flames', S.FLAMES);
+    one('winHalf', S.WIN_HALF);
+    one('winOpen', S.WIN_OPEN);
+    one('winBlink', S.WIN_BLINK);
+    one('drvStand', S.DRIVER.stand);
+    one('drvWalk', S.DRIVER.walk);
+    one('drvStandL', S.DRIVER.standL);
+    one('drvWalkL', S.DRIVER.walkL);
+    one('drvBendL', S.DRIVER.bendL);
     many('clouds', S.CLOUDS);
     many('treesFar', S.TREES_FAR);
     many('treesNear', S.TREES_NEAR);
@@ -601,29 +621,114 @@
   };
 
   /* ==================================================================== *
+   *  Fitur klik mobil: kedipan -> nitro -> mogok -> diperbaiki -> pulih
+   * ==================================================================== */
+
+  var EV_WINK = 2.6;        // kaca turun, pengemudi berkedip, kaca naik
+  var EV_NITRO = 4.2;       // semburan nitro
+  var EV_RECOVER = 1.6;     // mesin hidup lagi, kecepatan kembali normal
+  var TRAFFIC_GROUND = 126; // lajur berlawanan sedikit lebih tinggi di layar
+
+  Scene.prototype.carClickable = function () {
+    return this.ev.phase === 'idle';
+  };
+
+  /** Dipanggil saat mobil diklik. Ditolak selama animasi/jeda masih berjalan. */
+  Scene.prototype.pokeCar = function () {
+    if (this.ev.phase !== 'idle') return false;
+    this.ev.phase = 'wink';
+    this.ev.t = 0;
+    return true;
+  };
+
+  Scene.prototype._updateEvent = function (dt, base) {
+    var ev = this.ev;
+    if (this.evSpeed === null) this.evSpeed = base;
+    ev.t += dt;
+
+    if (ev.phase === 'wink' && ev.t >= EV_WINK) {
+      ev.phase = 'nitro'; ev.t = 0;
+    } else if (ev.phase === 'nitro' && ev.t >= EV_NITRO) {
+      // nitro memaksa mesin menyerah: "duk!" + kepulan gelap dari knalpot
+      ev.phase = 'mogok'; ev.t = 0;
+      // jeda acak 30-100 detik sebelum mobil bisa diklik lagi; selama itu
+      // pengemudi turun, memeriksa, dan memperbaiki mesinnya
+      ev.breakDur = 30 + Math.random() * 65;
+      for (var k = 0; k < 3; k++) {
+        this.smoke.push({ x: CAR_X - 1 - k * 2, y: CAR_GROUND - 5 - k, vx: -6 - Math.random() * 8, vy: -9 - Math.random() * 5, life: 1, r: 1.7 });
+      }
+    } else if (ev.phase === 'mogok' && ev.t >= ev.breakDur) {
+      ev.phase = 'pulih'; ev.t = 0;
+    } else if (ev.phase === 'pulih' && ev.t >= EV_RECOVER) {
+      ev.phase = 'idle'; ev.t = 0;
+    }
+
+    // kecepatan efektif dihaluskan menuju target tiap fase, jadi ngebut dan
+    // berhentinya tidak pernah patah
+    var target = base;
+    if (ev.phase === 'nitro') target = Math.max(base, 46) * 3.4;
+    else if (ev.phase === 'mogok') target = 0;
+    var rate = ev.phase === 'mogok' ? 2.4 : 1.8;
+    this.evSpeed += (target - this.evSpeed) * Math.min(1, dt * rate);
+    if (Math.abs(this.evSpeed - target) < 0.4) this.evSpeed = target;
+  };
+
+  /* ==================================================================== *
    *  Update: gerak dunia, partikel
    * ==================================================================== */
 
   Scene.prototype.update = function (dt, speed) {
     this.time += dt;
-    this.scroll += speed * dt;
+    this._updateEvent(dt, speed);
+    var eff = this.evSpeed;
+    this.scroll += eff * dt;
     this.swayPhase += dt * 1.6;
 
     var i, p;
+    var nitro = this.ev.phase === 'nitro';
 
-    // asap knalpot
-    if (speed > 2) {
-      this.smokeTimer -= dt;
+    // asap knalpot (lebih deras saat nitro)
+    if (eff > 2) {
+      this.smokeTimer -= dt * (nitro ? 3 : 1);
       if (this.smokeTimer <= 0) {
         this.smokeTimer = 0.16 + Math.random() * 0.12;
         this.smoke.push({ x: CAR_X - 1, y: CAR_GROUND - 5, vx: -14 - Math.random() * 10, vy: -5 - Math.random() * 6, life: 1, r: 1 });
         if (this.smoke.length > 22) this.smoke.shift();
       }
-      if (Math.random() < dt * 22) {
+      if (Math.random() < dt * (nitro ? 64 : 22)) {
         var wx = Math.random() < 0.5 ? CAR_X + 8 : CAR_X + 39;
         this.dust.push({ x: wx, y: CAR_GROUND - 1, vx: -26 - Math.random() * 22, vy: -3 - Math.random() * 8, life: 1 });
         if (this.dust.length > 26) this.dust.shift();
       }
+    }
+
+    // uap dari mesin yang mogok, makin jarang seiring diperbaiki
+    if (this.ev.phase === 'mogok' && this.ev.t < this.ev.breakDur - 4) {
+      var mu = this.ev.t / this.ev.breakDur;
+      this.steamTimer -= dt;
+      if (this.steamTimer <= 0) {
+        this.steamTimer = 0.25 + mu * 1.4 + Math.random() * 0.3;
+        this.steam.push({ x: CAR_X + 40 + Math.random() * 4, y: CAR_GROUND - 11, vx: -1 - Math.random() * 2, vy: -7 - Math.random() * 4, life: 1, r: 0.8 });
+        if (this.steam.length > 10) this.steam.shift();
+      }
+    }
+    for (i = this.steam.length - 1; i >= 0; i--) {
+      p = this.steam[i];
+      p.x += p.vx * dt; p.y += p.vy * dt; p.vy *= 0.97; p.r += dt * 2.2; p.life -= dt * 0.7;
+      if (p.life <= 0) this.steam.splice(i, 1);
+    }
+
+    // mobil lalu lintas dari arah berlawanan - tetap lewat walau kita mogok
+    this.trafficTimer -= dt;
+    var lastT = this.traffic.length ? this.traffic[this.traffic.length - 1] : null;
+    if (this.trafficTimer <= 0 && this.traffic.length < 2 && (!lastT || lastT.x < W - 40)) {
+      this.trafficTimer = 7 + Math.random() * 12;
+      this.traffic.push({ x: W + 60, kind: Math.floor(Math.random() * 3), sp: 30 + Math.random() * 26 });
+    }
+    for (i = this.traffic.length - 1; i >= 0; i--) {
+      p = this.traffic[i];
+      p.x -= (eff + p.sp) * dt;
+      if (p.x < -70) this.traffic.splice(i, 1);
     }
     for (i = this.smoke.length - 1; i >= 0; i--) {
       p = this.smoke[i];
@@ -870,6 +975,14 @@
       pix.circleDither(g, p.x, p.y, p.r, pal.matRgb.smoke, p.life * 0.30);
     }
 
+    // semburan nitro dari knalpot (menjulur ke belakang, di bawah bumper)
+    var ev = this.ev;
+    if (ev.phase === 'nitro' || (ev.phase === 'mogok' && ev.t < 0.18)) {
+      var fl = this.bank.flames[Math.floor(this.time * 22) & 1];
+      g.drawImage(fl, CAR_X - 10, CAR_GROUND - 7 + bob);
+      pix.circleDither(g, CAR_X - 5, CAR_GROUND - 5 + bob, 4.5, pal.matRgb.flameMid, 0.40);
+    }
+
     g.drawImage(this.bank.car, CAR_X, top);
 
     // pelek berputar
@@ -886,6 +999,105 @@
       p = this.dust[i];
       if (p.life > 0.35 || (Math.floor(this.time * 20) & 1)) {
         g.fillRect(Math.round(p.x), Math.round(p.y), 1, 1);
+      }
+    }
+
+    this._drawCarEvent(pal, top);
+  };
+
+  /* ==================================================================== *
+   *  Lapisan fitur klik mobil: jendela+kedipan, kap terbuka, pengemudi
+   * ==================================================================== */
+
+  Scene.prototype._drawCarEvent = function (pal, top) {
+    var g = this.g, pix = P.pixel, b = this.bank;
+    var ev = this.ev, t = ev.t;
+
+    if (ev.phase === 'wink') {
+      // kaca samping depan turun -> pengemudi menoleh & berkedip -> naik lagi.
+      // Overlay ditempel tepat di area kaca sprite mobil (lokal x=26, y=3).
+      var spr = null;
+      if (t >= 0.25 && t < 0.55) spr = b.winHalf;
+      else if (t >= 0.55 && t < 2.0) spr = (t > 1.0 && t < 1.45) ? b.winBlink : b.winOpen;
+      else if (t >= 2.0 && t < 2.35) spr = b.winHalf;
+      if (spr) g.drawImage(spr, CAR_X + 26, top + 3);
+      return;
+    }
+
+    if (ev.phase !== 'mogok') return;
+    var D = ev.breakDur;
+
+    // kap mesin terangkat selama diperiksa
+    if (t > 2.8 && t < D - 1.6) {
+      g.fillStyle = pal.mat.carDeep;
+      g.fillRect(CAR_X + 39, top + 7, 6, 2);           // rongga mesin gelap
+      g.fillStyle = pal.mat.carBody;
+      g.fillRect(CAR_X + 38, top + 4, 2, 1);           // bilah kap, miring naik
+      g.fillRect(CAR_X + 40, top + 5, 2, 1);
+      g.fillRect(CAR_X + 42, top + 6, 2, 1);
+    }
+
+    // pengemudi: keluar dari kabin -> memeriksa & memperbaiki -> kembali masuk
+    var out0 = 1.4, out1 = 3.2;                        // berjalan ke depan mobil
+    var back0 = D - 2.4, back1 = D - 0.6;              // berjalan kembali
+    var dx = null, spr2 = null;
+    if (t >= out0 && t < out1) {
+      var u = (t - out0) / (out1 - out0);
+      dx = 22 + u * 25;
+      spr2 = (Math.floor(this.time * 7) & 1) ? b.drvWalk : b.drvStand;
+    } else if (t >= out1 && t < back0) {
+      dx = 47;
+      var cyc = (t - out1) % 1.6;
+      spr2 = cyc < 1.0 ? b.drvBendL : b.drvStandL;     // menghadap mesin
+      if (cyc < 1.0 && (Math.floor(this.time * 14) % 5) === 0) {
+        // percikan kecil: sedang mengencangkan sesuatu
+        g.fillStyle = pal.mat.lampGlow;
+        g.fillRect(CAR_X + 43, top + 8, 1, 1);
+      }
+    } else if (t >= back0 && t < back1) {
+      var u2 = (t - back0) / (back1 - back0);
+      dx = 47 - u2 * 25;
+      spr2 = (Math.floor(this.time * 7) & 1) ? b.drvWalkL : b.drvStandL;
+    }
+    if (spr2 && dx !== null) {
+      var px = Math.round(CAR_X + dx);
+      var py = CAR_GROUND + 1 - spr2.height;
+      var pat = pix.pattern(g, pal.matRgb.carShadow, 0.25);
+      if (pat) { g.fillStyle = pat; g.fillRect(px, CAR_GROUND, spr2.width, 1); }
+      g.drawImage(spr2, px, py);
+    }
+
+    // uap dari mesin (di depan mobil, jadi digambar setelahnya)
+    for (var i = 0; i < this.steam.length; i++) {
+      var p = this.steam[i];
+      pix.circleDither(g, p.x, p.y, p.r, pal.matRgb.steam, p.life * 0.35);
+    }
+  };
+
+  /* ==================================================================== *
+   *  Mobil lalu lintas di lajur berlawanan
+   * ==================================================================== */
+
+  Scene.prototype._drawTraffic = function (pal) {
+    if (!this.traffic.length) return;
+    var g = this.g, pix = P.pixel, S = P.sprites;
+    var lampA = pal.light.lampA;
+    for (var i = 0; i < this.traffic.length; i++) {
+      var c = this.traffic[i];
+      var x = Math.round(c.x);
+      var ttop = TRAFFIC_GROUND - 17;
+      var pat = pix.pattern(g, pal.matRgb.carShadow, 0.16 + 0.30 * pal.light.lightAmt);
+      if (pat) { g.fillStyle = pat; g.fillRect(x + 3, TRAFFIC_GROUND - 1, 42, 2); }
+      g.drawImage(this.bank.traffic[c.kind], x, ttop);
+      var rim = this.bank.rims[Math.floor(c.x * 0.42) & 1];
+      var wl = S.TRAFFIC_WHEELS;
+      for (var k = 0; k < wl.length; k++) {
+        g.drawImage(rim, x + wl[k].x, ttop + wl[k].y);
+      }
+      if (lampA > 0.05) {
+        // lampu depan di kiri (mobil menghadap kiri), lampu belakang di kanan
+        pix.circleDither(g, x + 1, ttop + 9, 3.5, pal.matRgb.lampGlow, lampA * 0.55);
+        pix.circleDither(g, x + 46, ttop + 9, 2.4, pal.matRgb.tailGlow, lampA * 0.35);
       }
     }
   };
@@ -1003,7 +1215,8 @@
     this._blit(this.tiles.road, TW_ROAD, ROAD_TOP, PX_FACTOR.road);
     this._drawPosts(pal);
 
-    this._drawCar(pal, opt.speed);
+    this._drawTraffic(pal);
+    this._drawCar(pal, this.evSpeed === null ? opt.speed : this.evSpeed);
 
     var frame = Math.floor(this.swayPhase) % SWAY_FRAMES;
     this._blit(this.tiles.fore[frame], TW_FORE, FORE_TOP, PX_FACTOR.fore);

@@ -424,11 +424,19 @@ function captureArgs() {
   if (!on) return null;
   const outArg = args.find(a => a.startsWith('--out='));
   const timesArg = args.find(a => a.startsWith('--times='));
+  // --event=wink:1.2,nitro:1.5,mogok:6 -> tangkapan fase animasi klik-mobil
+  const evArg = args.find(a => a.startsWith('--event='));
   return {
     out: outArg ? outArg.slice(6) : path.join(app.getPath('temp'), 'pdc-capture'),
     times: timesArg
       ? timesArg.slice(8).split(',').map(Number).filter(n => !isNaN(n))
-      : [1, 5.2, 6.2, 7.5, 12, 16, 17.7, 18.6, 20, 22.5]
+      : (evArg ? [] : [1, 5.2, 6.2, 7.5, 12, 16, 17.7, 18.6, 20, 22.5]),
+    events: evArg
+      ? evArg.slice(8).split(',').map(s => {
+          const p = s.split(':');
+          return { phase: p[0], t: Number(p[1]) };
+        }).filter(e => ['wink', 'nitro', 'mogok', 'pulih'].includes(e.phase) && !isNaN(e.t))
+      : []
   };
 }
 
@@ -481,6 +489,22 @@ async function runCapture(cfg) {
     fs.writeFileSync(file, Buffer.from(b64, 'base64'));
     capLog(cfg, 'tersimpan ' + file);
   }
+
+  // tangkapan fase animasi klik-mobil (siang, jam 12)
+  for (const e of cfg.events) {
+    const url = await withTimeout(
+      w.webContents.executeJavaScript(
+        'window.__captureEvent(' + JSON.stringify(e.phase) + ',' + e.t + ', 12, 3)'),
+      30000, 'event ' + e.phase + ':' + e.t
+    );
+    if (!/^data:image\/png;base64,./.test(String(url))) {
+      throw new Error('hasil __captureEvent bukan data-URL PNG (' + e.phase + ')');
+    }
+    const file = path.join(cfg.out,
+      'ev-' + e.phase + '-' + String(e.t).replace('.', 'h') + '.png');
+    fs.writeFileSync(file, Buffer.from(String(url).split(',')[1], 'base64'));
+    capLog(cfg, 'tersimpan ' + file);
+  }
   capLog(cfg, 'CAPTURE_DONE ' + cfg.out);
   quitting = true;
   app.quit();
@@ -503,6 +527,10 @@ loadSettings();
 // canvas.toDataURL(), jadi jalur GPU tidak dipakai sama sekali dan justru
 // membuat jendela offscreen tidak stabil.
 if (settings.lowPower || capture) {
+  // Gabungkan proses GPU ke proses utama: dengan akselerasi perangkat keras
+  // mati, proses GPU terpisah hampir tidak bekerja tapi tetap memakan RAM
+  // (terukur ~15 MB privat / ~48 MB working set, satu proses lebih sedikit).
+  app.commandLine.appendSwitch('in-process-gpu');
   app.disableHardwareAcceleration();
 }
 

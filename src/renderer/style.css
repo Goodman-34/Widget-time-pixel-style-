@@ -64,6 +64,23 @@ body.capture #widget { border-radius: 0; box-shadow: none; }
 #tools button:hover { background: rgba(40, 60, 110, .92); color: #fff; }
 #btn-close:hover { background: rgba(150, 40, 40, .95); }
 
+/* --------------------------- area klik mobil --------------------------- */
+/* Persentase mengikuti posisi mobil di kanvas dasar 256x144 (x 96..148,
+   y 110..133) sehingga otomatis ikut membesar bersama skala widget. */
+#car-hit {
+  position: absolute;
+  left: 37.5%;
+  top: 76.4%;
+  width: 20.3%;
+  height: 16%;
+  /* saat tidak aktif, area ini ikut jadi pegangan geser seperti kanvas */
+  -webkit-app-region: drag;
+}
+#car-hit.aktif {
+  -webkit-app-region: no-drag;
+  cursor: pointer;
+}
+
 /* --------------------------- panel setelan --------------------------- */
 
 #panel {
@@ -92,8 +109,13 @@ body.capture #widget { border-radius: 0; box-shadow: none; }
   padding-bottom: 6px;
   margin-bottom: 6px;
   border-bottom: 1px solid rgba(140, 170, 230, .22);
+  /* Saat panel terbuka, seluruh kanvas tertutup panel yang no-drag -
+     tanpa pegangan ini widget tidak bisa dipindahkan sama sekali. */
+  -webkit-app-region: drag;
+  cursor: move;
 }
 #panel header button {
+  -webkit-app-region: no-drag;
   width: 18px; height: 18px;
   background: transparent;
   color: #9fb4dd;

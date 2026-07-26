@@ -11,6 +11,11 @@
   <div id="widget">
     <canvas id="scene" width="256" height="144"></canvas>
 
+    <!-- area klik tepat di atas mobil; kelas "aktif" dipasang-lepas dari
+         app.js sesuai keadaan animasi (elemen sengaja tidak pernah di-hide:
+         peta wilayah no-drag Electron dihitung dari elemen yang tampil) -->
+    <div id="car-hit" title="Klik mobilnya!"></div>
+
     <div id="tools">
       <button id="btn-settings" title="Pengaturan (klik kanan)">&#9881;</button>
       <button id="btn-min" title="Sembunyikan ke tray">&#8211;</button>

@@ -120,6 +120,29 @@
     carTrim:       ['#3a3e48', 0.06, 0],
     carShadow:     ['#1d2430', 0.06, 0],
 
+    /* --- kabin & pengemudi (fitur klik mobil) --- */
+    cabinDark:     ['#252932', 0.06, 0],
+    driverHair:    ['#2e2620', 0.06, 0],
+    driverSkin:    ['#e2ae84', 0.06, 0],
+    driverEye:     ['#1c1a18', 0.06, 0],
+    driverShirt:   ['#3f6cc8', 0.06, 0],
+    driverPants:   ['#2c3450', 0.06, 0],
+    driverShoe:    ['#23242b', 0.06, 0],
+
+    /* --- mobil lalu lintas (bentuk sama, warna bodi beda) --- */
+    trafficRedBody:   ['#c8524a', 0.08, 0],
+    trafficRedHi:     ['#e88a80', 0.08, 0],
+    trafficRedShade:  ['#93362f', 0.08, 0],
+    trafficRedDeep:   ['#5f221e', 0.08, 0],
+    trafficBlueBody:  ['#4a6cc8', 0.08, 0],
+    trafficBlueHi:    ['#84a4e8', 0.08, 0],
+    trafficBlueShade: ['#32488f', 0.08, 0],
+    trafficBlueDeep:  ['#20305f', 0.08, 0],
+    trafficGreenBody: ['#4aa05a', 0.08, 0],
+    trafficGreenHi:   ['#82cc8e', 0.08, 0],
+    trafficGreenShade:['#2f7040', 0.08, 0],
+    trafficGreenDeep: ['#1e4a2a', 0.08, 0],
+
     /* --- ladang bunga depan --- */
     fieldNearLight:['#74c44c', 0.00, 0],
     fieldNearDark: ['#4fa033', 0.00, 0],
@@ -147,6 +170,7 @@
     /* --- partikel --- */
     smoke:         ['#9a9aa4', 0.06, 0],
     dust:          ['#b8ad94', 0.06, 0],
+    steam:         ['#c2c8d2', 0.06, 0.10],
 
     /* --- benda yang menyala sendiri: tidak dipengaruhi cahaya --- */
     sunCore:       ['#fffbe0', 0, 1],
@@ -159,6 +183,9 @@
     starWarm:      ['#ffe6c0', 0, 1],
     lampGlow:      ['#fff3c0', 0, 1],
     tailGlow:      ['#ff4a3a', 0, 1],
+    flameCore:     ['#fff6c8', 0, 1],
+    flameMid:      ['#ff9a3a', 0, 1],
+    flameOut:      ['#e0452a', 0, 0.9],
     firefly:       ['#dcff8c', 0, 1],
     carLamp:       ['#fff8d8', 0.06, 0.85],
     carTail:       ['#ff5342', 0.06, 0.55],

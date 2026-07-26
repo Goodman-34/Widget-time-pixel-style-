@@ -4,15 +4,35 @@ Semua perubahan penting proyek ini dicatat di berkas ini.
 Formatnya mengikuti [Keep a Changelog](https://keepachangelog.com/id-ID/1.1.0/),
 dan penomoran versi mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 
-## [Belum dirilis]
+## [1.0.1] — 27 Juli 2026
 
 ### Ditambahkan
+- **Klik mobilnya!** Kaca samping turun, pengemudi menoleh dan berkedip,
+  lalu nitro menyala — semburan api di knalpot dan dunia melaju kencang.
+  Nitronya kelewat batas: mesin mogok, mobil berhenti, kap terbuka, dan
+  pengemudi turun untuk memeriksa serta memperbaikinya. Selama animasi dan
+  jeda perbaikan (acak 30–100 detik) mobil tidak bisa diklik lagi.
+- **Mobil lalu lintas** — pickup warna merah/biru/hijau sesekali melintas
+  dari arah berlawanan, lengkap dengan lampu yang menyala di malam hari.
+  Mereka tetap lewat saat mobil kita mogok.
+- **Artefak legacy Windows 7** (`-legacy-win7.exe`, portable) berbasis
+  Electron 22.3.27 — versi terakhir yang mendukung Windows 7/8/8.1. Lihat
+  peringatan kejujurannya di README.
 - Kotak centang **"Tampilkan jam"** di panel pengaturan — setelan `showClock`
   sebelumnya hanya bisa diubah dengan mengedit `settings.json` secara manual.
 - Zona waktu hasil edit tangan yang tidak ada di daftar (mis. UTC+01:30) kini
   tetap ditampilkan di dropdown dengan label `(khusus)`, bukan tampil kosong.
+- Mode tangkap fase animasi untuk pengembangan:
+  `electron . --capture --event=wink:1.2,nitro:1.5,mogok:6`.
+
+### Diubah
+- **RAM lebih hemat lagi**: dengan mode hemat RAM (bawaan), proses GPU kini
+  digabung ke proses utama — 3 proses (dari 4), RAM privat turun ±15 MB
+  (terukur, tanpa kenaikan CPU).
 
 ### Diperbaiki
+- **Widget tidak bisa digeser saat panel pengaturan terbuka** — kepala panel
+  (tulisan PENGATURAN) kini menjadi pegangan geser.
 - Perubahan dari **menu tray** (ukuran, selalu di atas, jalan otomatis) kini
   tersinkron ke panel pengaturan. Sebelumnya perubahan itu bisa dibatalkan
   diam-diam begitu setelan lain disentuh dari panel.
@@ -57,5 +77,5 @@ Rilis pertama.
 - Terukur: ±0,65% CPU dari 8 core, ±109 MB RAM privat, 301 MB terpasang.
 - Installer NSIS + versi portable untuk Windows 10 64-bit ke atas.
 
-[Belum dirilis]: https://github.com/Goodman-34/Widget-time-pixel-style-/compare/v1.0.0...HEAD
+[1.0.1]: https://github.com/Goodman-34/Widget-time-pixel-style-/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/Goodman-34/Widget-time-pixel-style-/releases/tag/v1.0.0

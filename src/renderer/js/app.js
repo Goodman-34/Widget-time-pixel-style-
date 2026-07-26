@@ -146,6 +146,16 @@
   /* ============================ loop render ============================ */
 
   var last = 0, acc = 0, running = false;
+  var carHitOn = null;
+
+  /** Area klik mobil hanya aktif saat animasinya bisa dipicu; selebihnya
+   *  wilayah itu kembali berfungsi sebagai pegangan geser widget. */
+  function syncCarHit() {
+    var on = !isCapture && scene.carClickable();
+    if (on === carHitOn) return;
+    carHitOn = on;
+    el['car-hit'].classList.toggle('aktif', on);
+  }
 
   function targetFps() {
     if (S.eco && !document.hasFocus()) return 12;
@@ -175,6 +185,7 @@
     scene.update(step, opt.speed);
     var p = ensurePalette(info.hour, now);
     scene.render(p, info, opt);
+    syncCarHit();
   }
 
   function start() {
@@ -209,6 +220,41 @@
     return c.toDataURL('image/png');
   };
 
+  /**
+   * Tangkap satu fase animasi klik-mobil pada titik waktunya (untuk
+   * `electron . --capture --event=...`). Keadaan event dipaksa lalu dunia
+   * disimulasikan ~3 detik supaya partikel (uap, asap, debu) ikut terbentuk.
+   */
+  window.__captureEvent = function (phase, tt, hour, up) {
+    up = up || 3;
+    clock.mode = 'manual';
+    clock.manualHour = hour;
+    scene.time = 4.2;
+    scene.scroll = 213;
+    scene.swayPhase = 1.1;
+    scene.smoke.length = 0; scene.dust.length = 0;
+    scene.steam.length = 0; scene.traffic.length = 0;
+    scene.trafficTimer = 999;   // jangan ada mobil lain di tangkapan fase
+    forcePalette();
+    for (var k = 0; k < 40; k++) {
+      scene.ev.phase = phase;
+      scene.ev.t = tt;
+      if (phase === 'mogok') scene.ev.breakDur = 60;
+      scene.update(0.08, 34);
+    }
+    scene.ev.phase = phase;
+    scene.ev.t = tt;
+    var info = clock.info({ hour12: false, showSeconds: true, showDate: true, showPhase: true });
+    var p = ensurePalette(hour, 1e12);
+    scene.render(p, info, { showClock: true, showPanel: true, speed: 34, bigScale: 3 });
+    var c = document.createElement('canvas');
+    c.width = BASE_W * up; c.height = BASE_H * up;
+    var g = c.getContext('2d');
+    g.imageSmoothingEnabled = false;
+    g.drawImage(canvas, 0, 0, c.width, c.height);
+    return c.toDataURL('image/png');
+  };
+
   /* ============================ antarmuka ============================ */
 
   var el = {};
@@ -216,7 +262,8 @@
    'rng-manual', 'lbl-manual', 'grp-demo', 'rng-demo', 'lbl-demo', 'sel-tz',
    'seg-fmt', 'chk-clock', 'chk-sec', 'chk-date', 'chk-phase', 'chk-panel', 'seg-scale',
    'rng-speed', 'lbl-speed', 'seg-fps', 'chk-eco', 'rng-op', 'lbl-op',
-   'chk-top', 'chk-auto', 'chk-lowpower', 'btn-reset', 'grp-tz'].forEach(function (id) {
+   'chk-top', 'chk-auto', 'chk-lowpower', 'btn-reset', 'grp-tz',
+   'car-hit'].forEach(function (id) {
     el[id] = document.getElementById(id);
   });
 
@@ -392,6 +439,10 @@
       for (var key in DEFAULTS) S[key] = DEFAULTS[key];
       applyScale(); applyClockMode(); applyWindow(); forcePalette(); syncUI(); persist();
     };
+
+    // klik mobil -> kedipan + nitro; scene menolak sendiri selama animasi
+    // dan jeda 30-100 detik masih berjalan
+    el['car-hit'].onclick = function () { scene.pokeCar(); };
   }
 
   /* ============================== mulai ============================== */

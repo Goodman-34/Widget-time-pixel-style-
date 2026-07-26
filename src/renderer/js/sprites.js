@@ -66,6 +66,140 @@
   ];
 
   /* ------------------------------------------------------------------ *
+   * MOBIL LALU LINTAS - bentuk pickup yang sama di-mirror (hadap kiri)
+   * dengan tiga warna bodi berbeda, supaya jalanan tidak sepi.
+   * ------------------------------------------------------------------ */
+  function mirrorRows(rows) {
+    var out = [];
+    for (var i = 0; i < rows.length; i++) {
+      out.push(rows[i].split('').reverse().join(''));
+    }
+    return out;
+  }
+
+  function trafficMap(warna) {
+    return {
+      K: 'carOutline', H: warna + 'Hi', B: warna + 'Body', S: warna + 'Shade',
+      D: warna + 'Deep', W: 'carGlass', w: 'carGlassHi', T: 'carTire',
+      R: 'carRim', b: 'carBumper', L: 'carLamp', l: 'carTail', G: 'carTrim'
+    };
+  }
+
+  var TRAFFIC_ROWS = mirrorRows(CAR.rows);
+  var TRAFFIC = [
+    S(TRAFFIC_ROWS, trafficMap('trafficRed')),
+    S(TRAFFIC_ROWS, trafficMap('trafficBlue')),
+    S(TRAFFIC_ROWS, trafficMap('trafficGreen'))
+  ];
+  // posisi pelek hasil pencerminan: x' = lebar - x - lebar_pelek
+  var TRAFFIC_WHEELS = [{ x: 38, y: 12 }, { x: 7, y: 12 }];
+
+  /* ------------------------------------------------------------------ *
+   * JENDELA KABIN & PENGEMUDI - overlay 10x4 yang ditempel tepat di
+   * kaca samping depan sprite CAR (anchor lokal x=26, y=3).
+   * I interior gelap, h rambut, s kulit, e mata, t kemeja
+   * Bentuk tiap baris mengikuti kemiringan pilar kaca aslinya.
+   * ------------------------------------------------------------------ */
+  var WIN_MAP = {
+    I: 'cabinDark', h: 'driverHair', s: 'driverSkin', e: 'driverEye', t: 'driverShirt'
+  };
+
+  // kaca baru turun separuh: bagian atas terbuka, bawah masih kaca
+  var WIN_HALF = S([
+    'IIIIIII...',
+    'IIIIIIII..',
+    '..........',
+    '..........'
+  ], WIN_MAP);
+
+  // kaca turun penuh, pengemudi menoleh: mata terbuka / terpejam (kedip).
+  // Mata sengaja diapit kulit di kedua sisi - kalau ditempel ke interior
+  // gelap, terbuka/terpejamnya tidak bisa dibedakan.
+  var WIN_OPEN = S([
+    'IhhhhII...',
+    'IhssesII..',
+    'IhssssIII.',
+    'IIttttIIII'
+  ], WIN_MAP);
+
+  var WIN_BLINK = S([
+    'IhhhhII...',
+    'IhssssII..',
+    'IhssssIII.',
+    'IIttttIIII'
+  ], WIN_MAP);
+
+  /* ------------------------------------------------------------------ *
+   * API NITRO - semburan ke belakang (kiri) dari knalpot, 2 frame.
+   * F inti putih-kuning, O tengah jingga, R luar merah
+   * ------------------------------------------------------------------ */
+  var FLAME_MAP = { F: 'flameCore', O: 'flameMid', R: 'flameOut' };
+  var FLAMES = [
+    S([
+      '.......ROO.',
+      '..RROOOFFFF',
+      '...RROOFFFF',
+      '.....RROO..'
+    ], FLAME_MAP),
+    S([
+      '....RROOO..',
+      '.RROOOFFFFF',
+      '..RROOFFFF.',
+      '......ROO..'
+    ], FLAME_MAP)
+  ];
+
+  /* ------------------------------------------------------------------ *
+   * PENGEMUDI - keluar memeriksa mesin saat mogok. 5x8 (berdiri/jalan)
+   * dan 8x8 (membungkuk ke kap). Versi hadap kiri dibuat dengan mirror.
+   * h rambut, s kulit, t kemeja, p celana, b sepatu
+   * ------------------------------------------------------------------ */
+  var DRIVER_MAP = {
+    h: 'driverHair', s: 'driverSkin', t: 'driverShirt', p: 'driverPants', b: 'driverShoe'
+  };
+
+  var DRIVER_STAND_ROWS = [
+    '.hhh.',
+    '.hsss',
+    '.ttt.',
+    '.ttt.',
+    '.ttt.',
+    '.p.p.',
+    '.p.p.',
+    '.b.b.'
+  ];
+  var DRIVER_WALK_ROWS = [
+    '.hhh.',
+    '.hsss',
+    '.ttt.',
+    '.ttt.',
+    '.ttt.',
+    '.p.p.',
+    'p...p',
+    'b...b'
+  ];
+  // membungkuk ke kanan, kepala menunduk ke arah mesin
+  var DRIVER_BEND_ROWS = [
+    '......hh',
+    '.....hss',
+    '..ttttt.',
+    '.tt.....',
+    '.pp.....',
+    '.pp.....',
+    '.p.p....',
+    '.b.b....'
+  ];
+
+  var DRIVER = {
+    stand: S(DRIVER_STAND_ROWS, DRIVER_MAP),
+    walk: S(DRIVER_WALK_ROWS, DRIVER_MAP),
+    standL: S(mirrorRows(DRIVER_STAND_ROWS), DRIVER_MAP),
+    walkL: S(mirrorRows(DRIVER_WALK_ROWS), DRIVER_MAP),
+    // membungkuk menghadap kiri: dipakai saat memeriksa mesin dari depan mobil
+    bendL: S(mirrorRows(DRIVER_BEND_ROWS), DRIVER_MAP)
+  };
+
+  /* ------------------------------------------------------------------ *
    * AWAN - L sisi kena cahaya, M badan, D sisi bawah
    * ------------------------------------------------------------------ */
   var CLOUD_MAP = { L: 'cloudLit', M: 'cloudMid', D: 'cloudDark' };
@@ -262,6 +396,13 @@
     CAR: CAR,
     CAR_WHEELS: CAR_WHEELS,
     RIMS: RIMS,
+    TRAFFIC: TRAFFIC,
+    TRAFFIC_WHEELS: TRAFFIC_WHEELS,
+    WIN_HALF: WIN_HALF,
+    WIN_OPEN: WIN_OPEN,
+    WIN_BLINK: WIN_BLINK,
+    FLAMES: FLAMES,
+    DRIVER: DRIVER,
     CLOUDS: CLOUDS,
     TREES_NEAR: TREES_NEAR,
     TREES_FAR: TREES_FAR,
