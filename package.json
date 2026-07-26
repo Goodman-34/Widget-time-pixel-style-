@@ -41,7 +41,7 @@
     "productName": "Pixel Drive Clock",
     "copyright": "Copyright (c) 2026",
     "asar": true,
-    "compression": "maximum",
+    "compression": "normal",
     "removePackageScripts": true,
     "npmRebuild": false,
     "electronLanguages": [
