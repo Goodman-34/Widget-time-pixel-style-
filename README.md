@@ -492,11 +492,20 @@ preview/                contoh tangkapan tiap fase hari
 
 Dokumen lain:
 
+- [`CHANGELOG.md`](CHANGELOG.md) — catatan perubahan tiap versi.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — cara ikut berkontribusi, dari
+  persiapan sampai daftar periksa sebelum pull request.
+- [`SECURITY.md`](SECURITY.md) — cara melaporkan celah keamanan, dan batas
+  keamanan yang dirancang di widget ini.
+- [`SUPPORT.md`](SUPPORT.md) — ke mana bertanya kalau ada masalah.
+- [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) — kode etik ruang proyek ini.
 - [`CATATAN-PENGEMBANGAN.md`](CATATAN-PENGEMBANGAN.md) — arsip teknis proses
   pembuatan widget ini dari nol: perintah yang dijalankan beserta keluarannya,
   16 bug yang ditemukan beserta sebabnya, dan angka hasil pengukuran.
-- [`CLAUDE.md`](CLAUDE.md) / [`AGENTS.md`](AGENTS.md) — panduan untuk asisten
-  AI yang ikut mengerjakan repo ini.
+- [`AGENTS.md`](AGENTS.md) — acuan utama untuk asisten AI;
+  [`CLAUDE.md`](CLAUDE.md), [`GEMINI.md`](GEMINI.md), dan
+  [`.github/copilot-instructions.md`](.github/copilot-instructions.md)
+  menunjuk ke sana.
 
 ---
 
