@@ -65,17 +65,20 @@ jobs:
       # ini 100% offline - tidak pernah memuat konten dari jaringan, tidak ada
       # navigasi keluar (setWindowOpenHandler menolak semuanya).
       #
-      # -c.electronVersion menimpa versi Electron dari devDependencies hanya
-      # untuk langkah ini; electron-builder mengunduh sendiri biner 22.3.27.
-      # Hanya target portable yang dibuat (--win portable), jadi konfigurasi
-      # NSIS di package.json diabaikan dan cuma ada SATU artefak legacy;
-      # artifactName diberi akhiran -legacy-win7 agar tidak menimpa portable
-      # utama di dist/. Pola dist/*.exe pada langkah artifact dan Releases di
-      # bawah otomatis ikut membawa berkas ini.
-      # (Catatan: jangan menambahkan -c.nsis=null - electron-builder salah
-      # menafsirkannya sebagai path berkas konfigurasi ".nsis=null".)
+      # Override ditulis langsung ke package.json di runner - JANGAN memakai
+      # sintaks CLI -c.x=y: electron-builder 26.15.3 menafsirkan seluruh
+      # "-c.x=y" sebagai PATH berkas konfigurasi dan gagal ENOENT (terbukti
+      # dua kali di run 30217381535 dan 30217603106). Perubahan package.json
+      # ini hanya hidup di runner dan dilakukan SETELAH build utama selesai.
+      # Hanya target portable yang dibuat supaya cuma ada SATU artefak legacy;
+      # akhiran -legacy-win7 menjaga portable utama di dist/ tidak tertimpa.
+      # Pola dist/*.exe pada langkah artifact dan Releases otomatis ikut
+      # membawa berkas ini.
       - name: Bangun versi legacy Windows 7 (Electron 22)
-        run: npx electron-builder --win portable -c.electronVersion=22.3.27 -c.portable.artifactName='PixelDriveClock-${version}-legacy-win7.exe' --publish never
+        shell: pwsh
+        run: |
+          node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync("package.json","utf8"));p.build.electronVersion="22.3.27";p.build.portable.artifactName="PixelDriveClock-${version}-legacy-win7.exe";fs.writeFileSync("package.json",JSON.stringify(p,null,2));'
+          npx electron-builder --win portable --publish never
         env:
           # Sama seperti build utama: tanpa penandatanganan digital.
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
