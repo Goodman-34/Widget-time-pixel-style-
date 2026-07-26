@@ -1,9 +1,7 @@
 ﻿# Panduan Kontribusi
 
 Terima kasih sudah tertarik ikut mengerjakan Pixel Drive Clock. Dokumen ini
-merangkum cara berkontribusi; aturan teknis lengkapnya ada di
-[`AGENTS.md`](AGENTS.md) — **baca berkas itu dulu**, berlaku untuk manusia
-maupun asisten AI.
+merangkum semua aturan yang perlu diketahui sebelum mengubah kode.
 
 ## Bahasa
 
@@ -31,26 +29,38 @@ npm start
 
 ## Empat aturan yang tidak boleh dilanggar
 
-Penjelasan lengkapnya di [`AGENTS.md`](AGENTS.md) §3:
-
 1. **Semua baris sprite harus sama panjang** — pixel-art ditulis sebagai teks
-   ASCII di `sprites.js`; selisih satu karakter merusak seluruh gambar.
-2. **Jangan menulis warna per jam** — warna dihitung dari model pencahayaan,
-   bukan tabel per jam. Cabang `if (jam > 18)` untuk warna adalah kesalahan
-   arsitektur.
+   ASCII di `sprites.js`; selisih satu karakter merusak seluruh gambar dan
+   nyaris tidak terlihat mata. `npm run validate` menangkapnya.
+2. **Jangan menulis warna per jam** — warna dihitung dari model pencahayaan di
+   `palette.js` (albedo tiap material + 12 keyframe cahaya), bukan tabel per
+   jam. Cabang `if (jam > 18)` untuk warna adalah kesalahan arsitektur.
 3. **Offset gambar harus bilangan bulat** — koordinat pecahan membuat
    pixel-art bergetar.
 4. **Perubahan visual harus dilihat** — jalankan `npm run capture` lalu buka
    PNG-nya. Kode yang "kelihatan benar" belum tentu gambarnya benar.
+
+## Menambah setelan baru = mengubah 5 tempat
+
+Setelan tersebar di lima tempat. Lewatkan satu saja, dan setelan itu tidak
+akan tersimpan atau tidak akan bisa diatur:
+
+1. `DEFAULTS` di `src/main.js`
+2. `sanitizeSettings()` di `src/main.js` — wajib, karena `settings.json` bisa
+   rusak atau diedit tangan; satu nilai liar (mis. `scale: 999`) cukup membuat
+   widget tidak bisa dipakai lagi lewat antarmuka
+3. `DEFAULTS` di `src/renderer/js/app.js`
+4. `sanitize()` di `app.js`
+5. Elemen di `src/renderer/index.html`, lalu daftar ID, `syncUI()`, dan
+   `wireUI()` di `app.js`
 
 ## Sebelum membuka pull request
 
 - [ ] `npm run validate` → SEMUA PEMERIKSAAN LOLOS
 - [ ] Ada perubahan visual? → `npm run capture` dan periksa PNG-nya
 - [ ] `npm start` → widget muncul dan bergerak
-- [ ] Menambah/mengubah setelan? → ikuti daftar **5 tempat** di
-      [`AGENTS.md`](AGENTS.md) §6, lalu uji dengan `settings.json` rusak
-      **dan** dihapus
+- [ ] Menambah/mengubah setelan? → ikuti daftar **5 tempat** di atas, lalu
+      uji dengan `settings.json` rusak **dan** dihapus
 - [ ] Jangan menambah dependensi runtime — proyek ini sengaja nol dependensi
 
 ## Gaya kode

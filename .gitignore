@@ -5,6 +5,13 @@ dist/
 # --- toolchain portabel yang dipakai saat pengembangan (~157 MB) ---
 .tools/
 
+# --- dokumen internal: cukup di folder lokal, tidak ikut repositori ---
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+CATATAN-PENGEMBANGAN.md
+.github/copilot-instructions.md
+
 # --- ikon hasil generate; dibuat ulang oleh `npm run icon` ---
 build/icon.png
 

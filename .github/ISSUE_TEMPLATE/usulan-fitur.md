@@ -23,4 +23,4 @@ assignees: ''
 Perlu diingat dua prinsip proyek ini: **nol dependensi runtime** dan hemat
 sumber daya (widget menyala 24 jam). Usulan yang menambah framework atau
 pekerjaan berat per frame kemungkinan besar ditolak — lihat
-[AGENTS.md](https://github.com/Goodman-34/Widget-time-pixel-style-/blob/main/AGENTS.md).
+[CONTRIBUTING.md](https://github.com/Goodman-34/Widget-time-pixel-style-/blob/main/CONTRIBUTING.md).
