@@ -59,8 +59,15 @@ let saveTimer = null;
  * Semua kasus itu tidak akan bisa diperbaiki lewat antarmuka.
  */
 function sanitizeSettings() {
+  // Hanya angka atau string angka yang diterima. Number() memetakan banyak
+  // nilai aneh ke 0 (null, '', false, []), dan 0 lolos pemeriksaan isFinite -
+  // itulah cara bug "posisi 0,0" dulu terjadi.
+  const asNum = (v) => {
+    if (typeof v !== 'number' && (typeof v !== 'string' || v.trim() === '')) return NaN;
+    return Number(v);
+  };
   const num = (v, min, max, fallback) => {
-    const n = Number(v);
+    const n = asNum(v);
     if (!Number.isFinite(n)) return fallback;
     return Math.min(max, Math.max(min, n));
   };
@@ -75,7 +82,7 @@ function sanitizeSettings() {
   if (![15, 30, 60].includes(settings.fps)) settings.fps = DEFAULTS.fps;
   if (!['live', 'manual', 'demo'].includes(settings.mode)) settings.mode = DEFAULTS.mode;
   if (settings.tzOffsetMin !== null) {
-    const tz = Number(settings.tzOffsetMin);
+    const tz = asNum(settings.tzOffsetMin);
     settings.tzOffsetMin = Number.isFinite(tz) && tz >= -720 && tz <= 840 ? Math.round(tz) : null;
   }
 
@@ -87,9 +94,7 @@ function sanitizeSettings() {
     // Hati-hati: Number(null) bernilai 0, bukan NaN. Kalau null diperlakukan
     // sebagai angka, posisi "belum pernah diatur" berubah jadi koordinat 0,0
     // dan widget selalu muncul di pojok kiri-atas, bukan di kanan-atas.
-    const raw = settings[k];
-    if (raw === null || raw === undefined || raw === '') { settings[k] = null; continue; }
-    const v = Number(raw);
+    const v = asNum(settings[k]);
     settings[k] = Number.isFinite(v) ? Math.round(v) : null;
   }
 }
@@ -177,7 +182,9 @@ function nudgeIntoScreen() {
   if (!win || win.isDestroyed()) return;
   const b = win.getBounds();
   if (clampToScreen(b.x, b.y, b.width, b.height)) return;
-  const a = screen.getPrimaryDisplay().workArea;
+  // layar yang paling dekat dengan posisi jendela sekarang - bukan layar
+  // utama, supaya widget di monitor kedua tidak mendadak berpindah monitor
+  const a = screen.getDisplayMatching(b).workArea;
   win.setPosition(
     Math.max(a.x, Math.min(b.x, a.x + a.width - b.width)),
     Math.max(a.y, Math.min(b.y, a.y + a.height - b.height))
@@ -352,7 +359,11 @@ function applyAutoStart(on) {
     // membuat "jalan otomatis" rusak diam-diam setelah reboot berikutnya.
     // PORTABLE_EXECUTABLE_FILE berisi lokasi .exe portable yang sebenarnya.
     const exe = process.env.PORTABLE_EXECUTABLE_FILE || process.execPath;
-    app.setLoginItemSettings({ openAtLogin: !!on, path: exe, args: [] });
+    // Saat jalan dari kode sumber, process.execPath adalah electron.exe polos;
+    // tanpa argumen folder proyek, yang terbuka saat login adalah aplikasi
+    // bawaan Electron, bukan widget ini.
+    const args = app.isPackaged ? [] : [path.resolve(__dirname, '..')];
+    app.setLoginItemSettings({ openAtLogin: !!on, path: exe, args });
   } catch (e) { console.error('gagal mengatur autostart:', e.message); }
 }
 
@@ -366,13 +377,18 @@ function registerIpc() {
     for (const k of Object.keys(DEFAULTS)) {
       if (partial[k] !== undefined) settings[k] = partial[k];
     }
+    // Renderer tidak boleh dipercaya begitu saja: tanpa ini, nilai liar
+    // (scale 999, fps "abc") ikut tertulis ke settings.json.
+    sanitizeSettings();
     saveSettings();
     refreshTrayMenu();
   });
 
   ipcMain.on('win:scale', (_e, scale) => { applyScale(scale); refreshTrayMenu(); });
   ipcMain.on('win:opacity', (_e, v) => {
-    const o = Math.max(0.2, Math.min(1, Number(v) || 1));
+    // batas bawah harus sama dengan sanitizeSettings (35) - kalau beda,
+    // nilai yang berlaku dalam sesi "melompat" setelah widget dijalankan ulang
+    const o = Math.max(0.35, Math.min(1, Number(v) || 1));
     settings.opacity = Math.round(o * 100);
     if (win) win.setOpacity(o);
     saveSettings();
@@ -389,7 +405,14 @@ function registerIpc() {
     saveSettings();
     refreshTrayMenu();
   });
-  ipcMain.on('win:hide', () => { if (win) win.hide(); });
+  ipcMain.on('win:hide', () => {
+    if (!win) return;
+    // Tanpa tray, jendela yang disembunyikan tidak bisa dimunculkan lagi
+    // (tidak ada di taskbar maupun Alt-Tab). Minimize saja - fallback tray
+    // sudah mengembalikannya ke taskbar.
+    if (tray) win.hide();
+    else win.minimize();
+  });
   ipcMain.on('app:quit', () => { quitting = true; app.quit(); });
 }
 
@@ -437,9 +460,22 @@ async function runCapture(cfg) {
   }
   capLog(cfg, ready ? 'renderer siap' : 'PERINGATAN: renderer tidak pernah siap');
 
+  // Batas waktu per gambar: renderer yang macet tidak boleh membuat
+  // `npm run capture` menggantung selamanya (terutama di CI).
+  const withTimeout = (p, ms, label) => Promise.race([
+    p,
+    new Promise((_, rej) => setTimeout(() => rej(new Error('waktu habis (' + label + ')')), ms))
+  ]);
+
   for (const t of cfg.times) {
-    const url = await w.webContents.executeJavaScript('window.__capture(' + t + ', 3)');
-    const b64 = String(url).split(',')[1] || '';
+    const url = await withTimeout(
+      w.webContents.executeJavaScript('window.__capture(' + t + ', 3)'),
+      30000, 'jam ' + t
+    );
+    if (!/^data:image\/png;base64,./.test(String(url))) {
+      throw new Error('hasil __capture bukan data-URL PNG (jam ' + t + ')');
+    }
+    const b64 = String(url).split(',')[1];
     const label = String(t).replace('.', 'h');
     const file = path.join(cfg.out, 'jam-' + label + '.png');
     fs.writeFileSync(file, Buffer.from(b64, 'base64'));
@@ -489,7 +525,17 @@ if (!capture && !app.requestSingleInstanceLock()) {
     if (settings.autoStart) applyAutoStart(true);
   });
 
-  app.on('window-all-closed', () => { /* widget tetap hidup di tray */ });
-  app.on('before-quit', () => { quitting = true; flushSettings(); });
+  app.on('window-all-closed', () => {
+    // Widget tetap hidup di tray - tapi kalau tray gagal dibuat, jendela yang
+    // tertutup (mis. Alt+F4) tidak bisa dibuka lagi dan prosesnya jadi zombie
+    // yang hanya bisa dimatikan lewat Task Manager. Lebih baik ikut keluar.
+    if (!tray) { quitting = true; app.quit(); }
+  });
+  app.on('before-quit', () => {
+    quitting = true;
+    // Mode tangkap tidak mengubah setelan apa pun; jangan menimpa
+    // settings.json milik widget yang mungkin sedang berjalan bersamaan.
+    if (!capture) flushSettings();
+  });
   app.on('activate', () => { if (!win) createWindow(); });
 }

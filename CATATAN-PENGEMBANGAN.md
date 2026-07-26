@@ -1,4 +1,4 @@
-# Catatan Pengembangan — Pixel Drive Clock
+﻿# Catatan Pengembangan — Pixel Drive Clock
 
 Dokumen arsip yang mencatat bagaimana widget ini dibangun: keputusan
 arsitektur, perintah yang dijalankan beserta keluarannya, bug yang ditemukan,

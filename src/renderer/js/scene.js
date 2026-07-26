@@ -363,7 +363,9 @@
     g.fillStyle = wire;
     for (t = 0; t < TW_MID; t += SPACING) {
       for (var k = 0; k < SPACING; k++) {
-        var u = k / SPACING;
+        // fase digeser 20 px agar titik gantung (sag = 0) tepat di palang
+        // tiang (px0 = t + 20), bukan menggantung di udara kosong
+        var u = ((k - 20 + SPACING) % SPACING) / SPACING;
         var sag = Math.sin(u * Math.PI) * 5;
         var x = t + k;
         g.fillRect(x % TW_MID, Math.round(poleTopY + 1 + sag), 1, 1);
@@ -390,7 +392,7 @@
 
   Scene.prototype._roadTile = function (palRgb, palCss) {
     var pix = P.pixel;
-    var hgt = ROAD_BOT - ROAD_TOP;                 // 19
+    var hgt = ROAD_BOT - ROAD_TOP;                 // 23
     var c = pix.makeCanvas(TW_ROAD, hgt);
     var g = pix.ctxOf(c);
     var img = g.createImageData(TW_ROAD, hgt);
@@ -452,7 +454,7 @@
 
   Scene.prototype._foreTiles = function (palRgb, palCss) {
     var pix = P.pixel;
-    var hgt = FORE_BOT - FORE_TOP;                 // 20
+    var hgt = FORE_BOT - FORE_TOP;                 // 18
     var groundTop = 10;                            // tanah padat mulai di sini
     var out = [];
     var lt = palRgb.fieldNearLight, dk = palRgb.fieldNearDark, dp = palRgb.fieldNearDeep;

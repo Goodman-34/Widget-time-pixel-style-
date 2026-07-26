@@ -66,15 +66,27 @@
     }, 250);
   }
 
+  /** Kirim segera setelan yang masih menunggu jeda 250 ms - dipanggil saat
+   *  widget akan ditutup, supaya perubahan detik-detik terakhir tidak hilang. */
+  function flushPersist() {
+    if (!saveTimer) return;
+    clearTimeout(saveTimer);
+    saveTimer = null;
+    if (api) api.setSettings(S);
+    else { try { localStorage.setItem('pdc-settings', JSON.stringify(S)); } catch (e) {} }
+  }
+
   /* =========================== terapkan setelan =========================== */
 
-  function applyScale() {
+  function applyScale(fromMain) {
     var w = BASE_W * S.scale, h = BASE_H * S.scale;
     widget.style.width = w + 'px';
     widget.style.height = h + 'px';
     document.body.style.width = w + 'px';
     document.body.style.height = h + 'px';
-    if (api) api.setScale(S.scale);
+    // fromMain: jendela sudah diubah proses utama (menu tray) - jangan
+    // dikirim balik, nanti saling menimpa
+    if (api && !fromMain) api.setScale(S.scale);
   }
 
   function applyClockMode() {
@@ -202,7 +214,7 @@
   var el = {};
   ['btn-settings', 'btn-min', 'btn-close', 'panel-close', 'seg-mode', 'grp-manual',
    'rng-manual', 'lbl-manual', 'grp-demo', 'rng-demo', 'lbl-demo', 'sel-tz',
-   'seg-fmt', 'chk-sec', 'chk-date', 'chk-phase', 'chk-panel', 'seg-scale',
+   'seg-fmt', 'chk-clock', 'chk-sec', 'chk-date', 'chk-phase', 'chk-panel', 'seg-scale',
    'rng-speed', 'lbl-speed', 'seg-fps', 'chk-eco', 'rng-op', 'lbl-op',
    'chk-top', 'chk-auto', 'chk-lowpower', 'btn-reset', 'grp-tz'].forEach(function (id) {
     el[id] = document.getElementById(id);
@@ -213,6 +225,13 @@
     return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
   }
 
+  function tzLabel(o) {
+    var sign = o < 0 ? '-' : '+';
+    var a = Math.abs(o);
+    return 'UTC' + sign + (Math.floor(a / 60) < 10 ? '0' : '') + Math.floor(a / 60) +
+      ':' + (a % 60 < 10 ? '0' : '') + (a % 60);
+  }
+
   function buildTzOptions() {
     var offs = [-720, -660, -600, -540, -480, -420, -360, -300, -270, -240, -210, -180,
       -120, -60, 0, 60, 120, 180, 210, 240, 270, 300, 330, 345, 360, 390, 420, 480,
@@ -220,10 +239,7 @@
     var html = '<option value="sys">Ikuti jam sistem</option>';
     for (var i = 0; i < offs.length; i++) {
       var o = offs[i];
-      var sign = o < 0 ? '-' : '+';
-      var a = Math.abs(o);
-      var lab = 'UTC' + sign + (Math.floor(a / 60) < 10 ? '0' : '') + Math.floor(a / 60) +
-        ':' + (a % 60 < 10 ? '0' : '') + (a % 60);
+      var lab = tzLabel(o);
       if (o === 420) lab += '  (WIB)';
       if (o === 480) lab += '  (WITA)';
       if (o === 540) lab += '  (WIT)';
@@ -254,7 +270,17 @@
     el['rng-demo'].value = S.demoSecPerDay;
     el['lbl-demo'].textContent = S.demoSecPerDay + ' s / hari';
     el['sel-tz'].value = S.tzOffsetMin == null ? 'sys' : String(S.tzOffsetMin);
+    if (el['sel-tz'].selectedIndex < 0) {
+      // offset sah hasil edit tangan yang tidak ada di daftar (mis. 90):
+      // tampilkan apa adanya supaya dropdown tidak terlihat kosong
+      var ekstra = document.createElement('option');
+      ekstra.value = String(S.tzOffsetMin);
+      ekstra.textContent = tzLabel(S.tzOffsetMin) + '  (khusus)';
+      el['sel-tz'].appendChild(ekstra);
+      el['sel-tz'].value = String(S.tzOffsetMin);
+    }
 
+    el['chk-clock'].checked = !!S.showClock;
     el['chk-sec'].checked = !!S.showSeconds;
     el['chk-date'].checked = !!S.showDate;
     el['chk-phase'].checked = !!S.showPhase;
@@ -285,7 +311,8 @@
     });
 
     el['btn-min'].onclick = function () { if (api) api.hide(); else togglePanel(false); };
-    el['btn-close'].onclick = function () { if (api) api.quit(); else window.close(); };
+    el['btn-close'].onclick = function () { flushPersist(); if (api) api.quit(); else window.close(); };
+    window.addEventListener('beforeunload', flushPersist);
 
     el['seg-mode'].onclick = function (e) {
       var m = e.target.getAttribute('data-mode');
@@ -338,6 +365,7 @@
         persist();
       };
     }
+    chk('chk-clock', 'showClock');
     chk('chk-sec', 'showSeconds');
     chk('chk-date', 'showDate');
     chk('chk-phase', 'showPhase');
@@ -374,8 +402,15 @@
    * pembersihan di proses utama.
    */
   function sanitize() {
+    // Hanya angka atau string angka yang diterima: Number() memetakan null,
+    // '', false, dan [] ke 0, dan 0 lolos isFinite - nilai seperti itu harus
+    // jatuh ke bawaan, bukan ke batas bawah rentang.
+    function asNum(v) {
+      if (typeof v !== 'number' && (typeof v !== 'string' || v.trim() === '')) return NaN;
+      return Number(v);
+    }
     function num(v, min, max, fb) {
-      var n = Number(v);
+      var n = asNum(v);
       if (!isFinite(n)) return fb;
       return Math.min(max, Math.max(min, n));
     }
@@ -387,7 +422,7 @@
     if ([15, 30, 60].indexOf(S.fps) < 0) S.fps = DEFAULTS.fps;
     if (['live', 'manual', 'demo'].indexOf(S.mode) < 0) S.mode = DEFAULTS.mode;
     if (S.tzOffsetMin !== null) {
-      var tz = Number(S.tzOffsetMin);
+      var tz = asNum(S.tzOffsetMin);
       S.tzOffsetMin = (isFinite(tz) && tz >= -720 && tz <= 840) ? Math.round(tz) : null;
     }
     var flags = ['hour12', 'showSeconds', 'showDate', 'showPhase', 'showClock',
@@ -411,6 +446,21 @@
     applyWindow();
     wireUI();
     syncUI();
+    if (api && api.onSettingsChanged) {
+      // Perubahan dari menu tray (ukuran / selalu di atas / autostart).
+      // Proses utama sudah menyimpan dan menerapkan sisi jendelanya; di sini
+      // cukup selaraskan S dan tampilan. Tanpa ini S renderer jadi basi, dan
+      // persist() berikutnya membatalkan perubahan tray secara diam-diam.
+      api.onSettingsChanged(function (patch) {
+        if (!patch || typeof patch !== 'object') return;
+        for (var key in patch) {
+          if (DEFAULTS[key] !== undefined) S[key] = patch[key];
+        }
+        sanitize();
+        if (patch.scale !== undefined) applyScale(true);
+        syncUI();
+      });
+    }
     if (api && S.autoStart) api.setAutoStart(true);
     if (!isCapture) start();
     window.__ready = true;

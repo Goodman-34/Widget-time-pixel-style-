@@ -1,4 +1,4 @@
-# CLAUDE.md
+﻿# CLAUDE.md
 
 Panduan lengkap untuk asisten AI di repo ini ada di **[AGENTS.md](AGENTS.md)**.
 Baca berkas itu lebih dulu — isinya aturan arsitektur, jebakan lingkungan yang

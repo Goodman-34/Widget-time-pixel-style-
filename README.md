@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 # 🚙 Pixel Drive Clock
 
@@ -47,7 +47,7 @@ tiba-tiba.
 
 Semua gambar di bawah dihasilkan oleh widget ini sendiri, bukan mockup.
 
-| Fajar 05:53 | Pagi 08:30 |
+| Fajar 05:54 | Pagi 08:30 |
 |:---:|:---:|
 | ![Fajar](preview/jam-5h9.png) | ![Pagi](preview/jam-8h5.png) |
 | **Siang 12:00** | **Sore 15:30** |
@@ -201,7 +201,7 @@ Setelan Anda **sengaja tidak ikut terhapus** supaya aman saat memperbarui
 versi. Kalau ingin benar-benar bersih, hapus juga folder ini:
 
 ```
-%APPDATA%\Pixel Drive Clock
+%APPDATA%\pixel-drive-clock
 ```
 
 ---
@@ -226,7 +226,7 @@ ini, atau membangun installer-nya sendiri dari sumber (lihat
 **3. Widget ini tidak mengambil data apa pun.**
 
 Tidak ada koneksi internet, tidak ada telemetri, tidak ada akun. Satu-satunya
-berkas yang ditulis adalah setelan Anda di `%APPDATA%\Pixel Drive Clock`.
+berkas yang ditulis adalah setelan Anda di `%APPDATA%\pixel-drive-clock`.
 Renderer-nya berjalan tanpa akses Node sama sekali (`contextIsolation: true`,
 `nodeIntegration: false`) dengan aturan keamanan konten `default-src 'none'`.
 
@@ -259,7 +259,7 @@ mengubah jam sistem.
 
 - **Sumber waktu** — Realtime / Manual / Demo
 - **Zona waktu** — 38 pilihan, WIB/WITA/WIT sudah dilabeli
-- **Tampilan jam** — format 12/24, detik, tanggal, label fase, panel gelap
+- **Tampilan jam** — tampilkan/sembunyikan jam, format 12/24, detik, tanggal, label fase, panel gelap
 - **Ukuran widget** — 1× / 2× / 3× / 4×
 - **Kecepatan mobil** — 0–100 (0 berarti mobil berhenti)
 - **Kehalusan animasi** — 15 / 30 / 60 fps, plus mode hemat daya
@@ -390,7 +390,7 @@ otomatis dikembalikan ke dalam layar saat dijalankan berikutnya.
 Kalau masih bermasalah, hapus berkas setelan lalu jalankan ulang:
 
 ```
-%APPDATA%\Pixel Drive Clock\settings.json
+%APPDATA%\pixel-drive-clock\settings.json
 ```
 </details>
 
@@ -451,6 +451,13 @@ Kalau angkanya jauh di bawah 200, pasang ulang binernya:
 
 ```bash
 npm install --save-dev electron@43.2.0 --force
+```
+
+Masih 0,5 MB juga setelah itu? Berarti npm Anda (versi 11+) memblokir skrip
+pemasangan paket. Jalankan pengunduhnya langsung:
+
+```bash
+node node_modules/electron/install.js
 ```
 
 Karena itu, jalankan `npm run build` sebagai **langkah terakhir**, bukan di

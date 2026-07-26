@@ -1,4 +1,4 @@
-# AGENTS.md — panduan untuk asisten AI
+﻿# AGENTS.md — panduan untuk asisten AI
 
 Dokumen ini adalah acuan utama bagi asisten AI (Claude Code, Cursor, Copilot,
 Codex, Aider, dan sejenisnya) yang mengerjakan repo ini.
@@ -217,6 +217,8 @@ Terjadi dua kali dan sudah dikonfirmasi. Periksa:
 ```
 
 Kalau jauh di bawah 200 → `npm install --save-dev electron@43.2.0 --force`.
+Kalau npm 11+ memblokir skrip pemasangan sehingga biner tetap tidak terunduh,
+jalankan langsung: `node node_modules/electron/install.js`.
 
 **Karena itu: jalankan `npm run build` sebagai langkah paling akhir**, bukan di
 tengah siklus uji.
