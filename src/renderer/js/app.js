@@ -14,7 +14,7 @@
       if (evt.detail.id === 'QUIT') Neutralino.app.exit();
     });
     Neutralino.os.setTray({
-      icon: '/src/renderer/assets/icon.png',
+      icon: '/src/assets/icon.png',
       menuItems: [
         { id: 'SHOW', text: 'Tampilkan Widget' },
         { id: 'QUIT', text: 'Tutup' }
