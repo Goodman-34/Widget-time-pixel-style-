@@ -219,27 +219,34 @@ Dua hal yang perlu Anda tahu, apa adanya:
 
 ## 📥 Cara memakai / memasang
 
-### Rilis Web Ringan (1.0.2 - Terbaru)
+Semua berkas unduhan resmi dapat diambil langsung dari halaman **[Releases](../../releases)** repositori ini.
 
-Mulai versi 1.0.2, aplikasi ini dirombak menjadi web widget statis untuk performa terbaik dan tanpa proses instalasi raksasa. Ambil berkas zip peluncurannya langsung dari folder `release/PixelDriveClock-1.0.2.zip` di repositori ini.
+### 🌐 Rilis Web Ringan (1.0.2 - Terbaru)
+
+Mulai versi 1.0.2, aplikasi ini dirombak menjadi web widget statis untuk performa terbaik dan tanpa proses instalasi raksasa. Ambil berkas **`PixelDriveClock-1.0.2.zip`** dari halaman **[Releases](../../releases)**.
 
 1. Ekstrak file zip tersebut.
 2. Buka `index.html` menggunakan browser modern apa saja (Chrome, Edge, Firefox, dll).
-*(Karena berjalan di browser, untuk menghapusnya Anda hanya perlu menghapus file ekstrasinya saja).*
+*(Karena berjalan di browser, untuk menghapusnya Anda hanya perlu menghapus folder ekstraknya saja).*
 
-### Rilis Desktop Klasik (1.0.1)
+### 🖥️ Rilis Desktop Klasik (1.0.1 & 1.0.0 Historis)
 
 Versi historis ini dikemas menggunakan arsitektur Electron dan dapat diinstal sebagai program Windows yang berdiri sendiri. Ambil berkasnya dari halaman **[Releases](../../releases)**:
 
+**Versi 1.0.1**
 | Berkas | Untuk siapa |
 |---|---|
 | **`PixelDriveClock-1.0.1-setup.exe`** | **Kebanyakan orang.** Installer biasa: klik dua kali, pilih folder, selesai. Membuat pintasan di Start Menu dan Desktop. Tidak perlu hak admin. |
 | **`PixelDriveClock-1.0.1-portable.exe`** | **Tanpa dipasang.** Satu berkas, klik langsung jalan. Cocok ditaruh di flashdisk. |
 | **`PixelDriveClock-1.0.1-legacy-win7.exe`** | **Khusus Windows 7/8/8.1** (portable). Baca dulu [catatannya](#versi-legacy-windows-7). |
 
-> Kedua berkas itu sengaja **tidak disimpan di dalam repo** (87 MB masing-masing).
-> Git bukan tempat menyimpan hasil build. Kalau Anda membangun sendiri,
-> hasilnya muncul di folder `dist/`.
+**Versi 1.0.0**
+| Berkas | Untuk siapa |
+|---|---|
+| **`PixelDriveClock-1.0.0-setup.exe`** | Installer dari rilis perdana. |
+| **`PixelDriveClock-1.0.0-portable.exe`** | Versi portable dari rilis perdana (tanpa dipasang). |
+
+> Berkas-berkas `.exe` di atas sengaja **tidak disimpan di dalam repo** (87 MB masing-masing). Git bukan tempat menyimpan hasil build. Kalau Anda membangun sendiri, hasilnya akan muncul di folder `dist/`.
 
 ### Mencabut pemasangan
 
@@ -366,15 +373,15 @@ npm install
 | `npm run validate` | Memeriksa sprite, font, dan palet (6 pemeriksaan) |
 | `npm run icon` | Membuat ulang ikon dari pixel-art |
 
-### Versi Desktop (1.0.1 Historis)
+### Versi Desktop (1.0.1 & 1.0.0 Historis)
 
-Jika Anda membongkar *commit* versi sebelumnya (saat masih memakai Electron), skrip ini berlaku:
+Jika Anda membongkar *commit* versi sebelumnya (saat masih memakai Electron), skrip ini berlaku. *(Catatan: Jika Anda hanya ingin mengunduh versi jadinya, silakan langsung ke halaman **[Releases](../../releases)**).*
 
 | Perintah | Fungsi |
 |---|---|
 | `npm start` | Menjalankan widget langsung dari kode |
 | `npm run capture` | Menyimpan PNG pemandangan pada 10 jam berbeda |
-| `npm run build` | Membuat installer + portable ke folder `dist/` |
+| `npm run build` | Membuat installer (`-setup.exe`) + portable (`-portable.exe`) ke folder `dist/` |
 
 Butuh Node.js 20+. Belum ada? `winget install OpenJS.NodeJS.LTS`.
 
