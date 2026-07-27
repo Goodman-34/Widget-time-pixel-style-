@@ -6,9 +6,12 @@ dan penomoran versi mengikuti [Semantic Versioning](https://semver.org/lang/id/)
 
 ## [1.0.2] — 27 Juli 2026
 
+Rilis Web / Non-Electron.
+
 ### Diubah
-- **Perubahan Arsitektur**: Menghapus dependensi Electron sepenuhnya. Widget ini sekarang murni berjalan sebagai web widget statis.
-- Mengganti cara menjalankan aplikasi secara lokal dengan modul `serve`.
+- **Perombakan Arsitektur**: Menghapus dependensi Electron secara penuh untuk memangkas ukuran aplikasi dan penggunaan sumber daya. Widget kini menjadi *web-based* murni yang dapat dijalankan di browser apa saja.
+- Mengganti alur kerja lokal dari `electron .` menjadi *local server* menggunakan `serve`.
+- Distribusi versi ini menggunakan file `.zip` berisi *source code renderer* statis, siap diletakkan di server web atau dijalankan secara lokal (tidak perlu proses *installer* raksasa).
 
 ## [1.0.1] — 27 Juli 2026
 

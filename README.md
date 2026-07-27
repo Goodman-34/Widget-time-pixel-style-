@@ -2,7 +2,7 @@
 
 # 🚙 Pixel Drive Clock
 
-**Widget jam pixel-art berbasis Web.**
+**Widget jam pixel-art untuk Web dan desktop Windows.**
 Sebuah pickup silver melintasi lapangan bunga, dan seluruh suasananya
 mengikuti waktu asli — dari fajar, siang terik, senja jingga, sampai malam
 berbintang. Peralihannya berjalan mulus seperti cahaya alam, bukan berganti
@@ -10,7 +10,8 @@ tiba-tiba.
 
 ![Siang](preview/jam-12.png)
 
-[![Platform](https://img.shields.io/badge/platform-Web-0078D6)](#-kebutuhan-sistem)
+[![Platform](https://img.shields.io/badge/platform-Web%20%7C%20Windows-0078D6)](#-kebutuhan-sistem)
+[![Electron](https://img.shields.io/badge/Electron-43.2.0-47848F)](https://www.electronjs.org/)
 [![Lisensi](https://img.shields.io/badge/lisensi-MIT-green)](LICENSE)
 [![Ukuran aset](https://img.shields.io/badge/aset-145%20KB-brightgreen)](#-kenapa-ringan)
 
@@ -115,12 +116,15 @@ tunggu pengemudinya selesai dulu.
 
 ### Widget
 
-- **100% Web-based** — tidak perlu dipasang, cukup buka di browser.
-- **Geser bebas** — antarmuka bersih dan minimalis.
+- Jendela **tanpa bingkai, transparan, sudut membulat**.
+- **Selalu di atas** jendela lain (bisa dimatikan).
+- **Geser bebas** — seret langsung gambarnya.
 - **4 ukuran**: 1× (256×144) sampai 4× (1024×576), semuanya kelipatan bulat
   sehingga pixel tetap tajam.
+- **Ikon tray** dengan menu cepat.
 - **Transparansi** bisa diatur 35–100%.
-- Setelan **tersimpan otomatis** melalui `localStorage`.
+- **Jalan otomatis saat Windows menyala** (opsional).
+- Setelan **tersimpan otomatis**, termasuk posisi terakhir di layar.
 
 ---
 
@@ -213,29 +217,78 @@ Dua hal yang perlu Anda tahu, apa adanya:
 
 ---
 
-## 📥 Cara memakai
+## 📥 Cara memakai / memasang
 
-Ambil berkas zip peluncuran dari folder `release/PixelDriveClock-1.0.2.zip` di repo ini.
+### Rilis Web Ringan (1.0.2 - Terbaru)
+
+Mulai versi 1.0.2, aplikasi ini dirombak menjadi web widget statis untuk performa terbaik dan tanpa proses instalasi raksasa. Ambil berkas zip peluncurannya langsung dari folder `release/PixelDriveClock-1.0.2.zip` di repositori ini.
 
 1. Ekstrak file zip tersebut.
 2. Buka `index.html` menggunakan browser modern apa saja (Chrome, Edge, Firefox, dll).
-3. Anda juga dapat menjalankannya lewat *local server* jika mendownload *source code* secara langsung:
-   `npm install` lalu `npm start`.
+*(Karena berjalan di browser, untuk menghapusnya Anda hanya perlu menghapus file ekstrasinya saja).*
+
+### Rilis Desktop Klasik (1.0.1)
+
+Versi historis ini dikemas menggunakan arsitektur Electron dan dapat diinstal sebagai program Windows yang berdiri sendiri. Ambil berkasnya dari halaman **[Releases](../../releases)**:
+
+| Berkas | Untuk siapa |
+|---|---|
+| **`PixelDriveClock-1.0.1-setup.exe`** | **Kebanyakan orang.** Installer biasa: klik dua kali, pilih folder, selesai. Membuat pintasan di Start Menu dan Desktop. Tidak perlu hak admin. |
+| **`PixelDriveClock-1.0.1-portable.exe`** | **Tanpa dipasang.** Satu berkas, klik langsung jalan. Cocok ditaruh di flashdisk. |
+| **`PixelDriveClock-1.0.1-legacy-win7.exe`** | **Khusus Windows 7/8/8.1** (portable). Baca dulu [catatannya](#versi-legacy-windows-7). |
+
+> Kedua berkas itu sengaja **tidak disimpan di dalam repo** (87 MB masing-masing).
+> Git bukan tempat menyimpan hasil build. Kalau Anda membangun sendiri,
+> hasilnya muncul di folder `dist/`.
 
 ### Mencabut pemasangan
 
-Karena ini berjalan di browser, Anda hanya perlu menghapus file ekstrasinya.
-Untuk menghapus setelan, cukup bersihkan data `localStorage` di browser untuk situs lokal tersebut.
+Settings → Apps → **Pixel Drive Clock** → Uninstall.
+
+Setelan Anda **sengaja tidak ikut terhapus** supaya aman saat memperbarui
+versi. Kalau ingin benar-benar bersih, hapus juga folder ini:
+
+```
+%APPDATA%\pixel-drive-clock
+```
 
 ---
 
-## ⚠️ Catatan penting
+## ⚠️ Catatan penting sebelum dipakai
 
-**1. Widget ini murni sisi-klien.**
-Tidak ada koneksi internet tambahan ke server eksternal, tidak ada telemetri, tidak ada akun. Satu-satunya penyimpanan yang dipakai adalah `localStorage` di browser Anda.
+**1. Windows akan menampilkan peringatan saat pertama dijalankan.**
 
-**2. Jam mengikuti jam perangkat Anda.**
-Kalau jam widget terasa salah, periksa dulu jam dan zona waktu sistem operasi Anda. Kalau memang ingin zona waktu lain, atur dari panel setelan, bukan dengan mengubah jam sistem.
+Layar biru bertuliskan *"Windows protected your PC"* akan muncul. Ini **normal**
+dan bukan berarti berkasnya berbahaya — penyebabnya berkas `.exe` ini belum
+ditandatangani dengan sertifikat digital, yang harganya ratusan dolar per tahun.
+
+Klik **More info** → **Run anyway**.
+
+**2. Antivirus kadang ikut curiga.**
+
+Beberapa antivirus menandai aplikasi Electron yang belum ditandatangani sebagai
+mencurigakan. Kalau ragu, Anda bisa memeriksa sendiri seluruh kodenya di repo
+ini, atau membangun installer-nya sendiri dari sumber (lihat
+[Membangun sendiri](#-membangun-sendiri)).
+
+**3. Widget ini tidak mengambil data apa pun.**
+
+Tidak ada koneksi internet, tidak ada telemetri, tidak ada akun. Satu-satunya
+berkas yang ditulis adalah setelan Anda di `%APPDATA%\pixel-drive-clock`.
+Renderer-nya berjalan tanpa akses Node sama sekali (`contextIsolation: true`,
+`nodeIntegration: false`) dengan aturan keamanan konten `default-src 'none'`.
+
+**4. Widget tidak muncul di taskbar.**
+
+Ini disengaja — namanya juga widget. Untuk memunculkan atau menutupnya, pakai
+**ikon tray** di dekat jam Windows. Kalau ikon tray gagal dibuat karena suatu
+hal, widget otomatis kembali muncul di taskbar supaya tetap bisa Anda jangkau.
+
+**5. Jam mengikuti jam Windows.**
+
+Kalau jam widget terasa salah, periksa dulu jam dan zona waktu Windows Anda.
+Kalau memang ingin zona waktu lain, atur dari panel setelan, bukan dengan
+mengubah jam sistem.
 
 ---
 
@@ -260,6 +313,9 @@ Kalau jam widget terasa salah, periksa dulu jam dan zona waktu sistem operasi An
 - **Kecepatan mobil** — 0–100 (0 berarti mobil berhenti)
 - **Kehalusan animasi** — 15 / 30 / 60 fps, plus mode hemat daya
 - **Transparansi** — 35–100 %
+- **Selalu di atas jendela lain**
+- **Jalan otomatis saat Windows menyala**
+- **Mode hemat RAM** — mematikan proses GPU (berlaku setelah dijalankan ulang)
 - **Kembalikan ke bawaan**
 
 ---
@@ -294,7 +350,7 @@ Widget jam yang menyala 24 jam tidak boleh boros. Ini yang dilakukan:
 
 ---
 
-## 🔨 Menjalankan sendiri
+## 🔨 Menjalankan & Membangun sendiri
 
 ```bash
 git clone https://github.com/Goodman-34/Widget-time-pixel-style-.git
@@ -302,11 +358,23 @@ cd Widget-time-pixel-style-
 npm install
 ```
 
+### Versi Web (1.0.2+)
+
 | Perintah | Fungsi |
 |---|---|
-| `npm start` | Menjalankan *local server* (melalui modul serve) dan membuka widget |
+| `npm start` | Menjalankan *local server* (melalui modul serve) dan membuka widget web |
 | `npm run validate` | Memeriksa sprite, font, dan palet (6 pemeriksaan) |
 | `npm run icon` | Membuat ulang ikon dari pixel-art |
+
+### Versi Desktop (1.0.1 Historis)
+
+Jika Anda membongkar *commit* versi sebelumnya (saat masih memakai Electron), skrip ini berlaku:
+
+| Perintah | Fungsi |
+|---|---|
+| `npm start` | Menjalankan widget langsung dari kode |
+| `npm run capture` | Menyimpan PNG pemandangan pada 10 jam berbeda |
+| `npm run build` | Membuat installer + portable ke folder `dist/` |
 
 Butuh Node.js 20+. Belum ada? `winget install OpenJS.NodeJS.LTS`.
 
@@ -462,6 +530,8 @@ tengah-tengah saat Anda masih bolak-balik menguji dengan `npm start`.
 
 ```
 src/
+  main.js               (Hanya v1.0.1) proses utama Electron: jendela, tray, setelan, IPC
+  preload.js            (Hanya v1.0.1) jembatan aman renderer <-> main (tanpa akses Node)
   assets/               ikon (dibuat oleh skrip, bukan digambar tangan)
   renderer/
     index.html          rangka + panel pengaturan
@@ -478,7 +548,7 @@ tools/
   make-icon.js          pembuat ikon PNG (encoder PNG mini, nol dependensi)
   validate-sprites.js   pemeriksa kewarasan aset & palet
 preview/                contoh tangkapan tiap fase hari
-release/                (ZIP File dari rilis yang siap digunakan)
+release/                (Sejak v1.0.2) ZIP File dari rilis web yang siap digunakan
 ```
 
 Dokumen lain:
