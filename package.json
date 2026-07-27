@@ -1,10 +1,9 @@
 {
   "name": "pixel-drive-clock",
-  "version": "1.0.1",
-  "description": "Widget jam pixel-art untuk Windows: pickup silver melintasi lapangan bunga, dengan siklus pagi/siang/sore/malam yang berpindah mulus.",
+  "version": "1.0.2",
+  "description": "Widget jam pixel-art: pickup silver melintasi lapangan bunga, dengan siklus pagi/siang/sore/malam yang berpindah mulus.",
   "author": "Goodman-34",
   "license": "MIT",
-  "main": "src/main.js",
   "private": true,
   "homepage": "https://github.com/Goodman-34/Widget-time-pixel-style-#readme",
   "repository": {
@@ -15,81 +14,21 @@
     "url": "https://github.com/Goodman-34/Widget-time-pixel-style-/issues"
   },
   "keywords": [
-    "electron",
     "widget",
     "clock",
     "pixel-art",
-    "desktop-widget",
-    "windows",
+    "web-widget",
     "day-night-cycle"
   ],
   "engines": {
     "node": ">=20.0.0"
   },
   "scripts": {
-    "start": "electron .",
+    "start": "serve src/renderer",
     "validate": "node tools/validate-sprites.js",
-    "icon": "node tools/make-icon.js",
-    "capture": "electron . --capture",
-    "prebuild": "node tools/make-icon.js && node tools/validate-sprites.js",
-    "build": "electron-builder --win nsis portable",
-    "build:portable": "electron-builder --win portable",
-    "build:installer": "electron-builder --win nsis"
-  },
-  "build": {
-    "appId": "com.pixeldrive.clock",
-    "productName": "Pixel Drive Clock",
-    "copyright": "Copyright (c) 2026",
-    "asar": true,
-    "compression": "normal",
-    "removePackageScripts": true,
-    "npmRebuild": false,
-    "electronLanguages": [
-      "en-US"
-    ],
-    "files": [
-      "src/**/*",
-      "package.json",
-      "!**/*.map",
-      "!**/.DS_Store"
-    ],
-    "directories": {
-      "output": "dist",
-      "buildResources": "build"
-    },
-    "win": {
-      "icon": "build/icon.png",
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
-        }
-      ]
-    },
-    "portable": {
-      "artifactName": "PixelDriveClock-${version}-portable.exe"
-    },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "Pixel Drive Clock",
-      "artifactName": "PixelDriveClock-${version}-setup.exe",
-      "deleteAppDataOnUninstall": false
-    }
+    "icon": "node tools/make-icon.js"
   },
   "devDependencies": {
-    "electron": "^43.2.0",
-    "electron-builder": "^26.15.3"
+    "serve": "^14.2.0"
   }
 }
