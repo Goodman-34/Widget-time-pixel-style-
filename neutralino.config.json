@@ -3,8 +3,8 @@
   "version": "1.0.2",
   "defaultMode": "window",
   "port": 0,
-  "documentRoot": "/",
-  "url": "/renderer/index.html",
+  "documentRoot": "/renderer/",
+  "url": "/index.html",
   "window": {
     "title": "Pixel Drive Clock",
     "width": 800,
