@@ -1,8 +1,14 @@
-﻿# Catatan Perubahan
+# Catatan Perubahan
 
 Semua perubahan penting proyek ini dicatat di berkas ini.
 Formatnya mengikuti [Keep a Changelog](https://keepachangelog.com/id-ID/1.1.0/),
 dan penomoran versi mengikuti [Semantic Versioning](https://semver.org/lang/id/).
+
+## [1.0.2] — 27 Juli 2026
+
+### Diubah
+- **Perubahan Arsitektur**: Menghapus dependensi Electron sepenuhnya. Widget ini sekarang murni berjalan sebagai web widget statis.
+- Mengganti cara menjalankan aplikasi secara lokal dengan modul `serve`.
 
 ## [1.0.1] — 27 Juli 2026
 
@@ -77,5 +83,6 @@ Rilis pertama.
 - Terukur: ±0,65% CPU dari 8 core, ±109 MB RAM privat, 301 MB terpasang.
 - Installer NSIS + versi portable untuk Windows 10 64-bit ke atas.
 
+[1.0.2]: https://github.com/Goodman-34/Widget-time-pixel-style-/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/Goodman-34/Widget-time-pixel-style-/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/Goodman-34/Widget-time-pixel-style-/releases/tag/v1.0.0
