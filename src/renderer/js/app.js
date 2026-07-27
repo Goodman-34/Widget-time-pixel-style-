@@ -6,7 +6,40 @@
 (function () {
   'use strict';
   var P = window.PDC;
-  var api = window.widgetAPI || null;
+  var api = null;
+  if (typeof Neutralino !== 'undefined') {
+    Neutralino.init();
+    Neutralino.events.on('trayMenuItemClicked', function(evt) {
+      if (evt.detail.id === 'SHOW') Neutralino.window.show();
+      if (evt.detail.id === 'QUIT') Neutralino.app.exit();
+    });
+    Neutralino.os.setTray({
+      icon: '/src/renderer/assets/icon.png',
+      menuItems: [
+        { id: 'SHOW', text: 'Tampilkan Widget' },
+        { id: 'QUIT', text: 'Tutup' }
+      ]
+    });
+    api = {
+      setSettings: function(s) { try { localStorage.setItem('pdc-settings', JSON.stringify(s)); } catch(e){} },
+      setScale: function(s) { 
+        Neutralino.window.setSize({width: 256 * s, height: 144 * s});
+      },
+      setOpacity: function(o) { document.body.style.opacity = o; },
+      setAlwaysOnTop: function(t) { Neutralino.window.setAlwaysOnTop(t); },
+      setAutoStart: function(t) { },
+      hide: function() { Neutralino.window.hide(); },
+      quit: function() { Neutralino.app.exit(); },
+      getSettings: function() { 
+        return new Promise(function(resolve) {
+          try { resolve(JSON.parse(localStorage.getItem('pdc-settings') || '{}')); }
+          catch(e) { resolve({}); }
+        });
+      }
+    };
+  } else if (window.widgetAPI) {
+    api = window.widgetAPI;
+  }
   var BASE_W = P.Scene.W, BASE_H = P.Scene.H;
 
   var DEFAULTS = {

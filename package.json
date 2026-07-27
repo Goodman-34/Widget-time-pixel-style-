@@ -27,15 +27,10 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "start": "electron .",
-    "validate": "node tools/validate-sprites.js",
-    "icon": "node tools/make-icon.js",
-    "capture": "electron . --capture",
-    "prebuild": "node tools/make-icon.js && node tools/validate-sprites.js",
-    "build": "electron-builder --win nsis portable",
-    "build:portable": "electron-builder --win portable",
-    "build:installer": "electron-builder --win nsis"
+    "start": "neu run",
+    "build": "neu build"
   },
+  "dependencies": {},
   "build": {
     "appId": "com.pixeldrive.clock",
     "productName": "Pixel Drive Clock",
@@ -56,40 +51,7 @@
     "directories": {
       "output": "dist",
       "buildResources": "build"
-    },
-    "win": {
-      "icon": "build/icon.png",
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
-        }
-      ]
-    },
-    "portable": {
-      "artifactName": "PixelDriveClock-${version}-portable.exe"
-    },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "Pixel Drive Clock",
-      "artifactName": "PixelDriveClock-${version}-setup.exe",
-      "deleteAppDataOnUninstall": false
-    }
-  },
   "devDependencies": {
-    "electron": "^43.2.0",
-    "electron-builder": "^26.15.3"
+    "@neutralinojs/neu": "^11.7.2"
   }
 }

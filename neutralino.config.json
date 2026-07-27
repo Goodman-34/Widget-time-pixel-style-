@@ -1,0 +1,36 @@
+{
+  "applicationId": "js.neutralino.pixeldriveclock",
+  "version": "1.0.2",
+  "defaultMode": "window",
+  "port": 0,
+  "documentRoot": "/src/renderer/",
+  "window": {
+    "title": "Pixel Drive Clock",
+    "width": 800,
+    "height": 600,
+    "minWidth": 400,
+    "minHeight": 200,
+    "fullscreen": false,
+    "alwaysOnTop": false,
+    "icon": "/src/renderer/assets/icon.png",
+    "enableInspector": false,
+    "borderless": true,
+    "maximize": false,
+    "hidden": false,
+    "resizable": true,
+    "transparent": true
+  },
+  "cli": {
+    "binaryName": "PixelDriveClock",
+    "resourcesPath": "/src/renderer/",
+    "extensionsPath": "/extensions/",
+    "clientLibrary": "/src/renderer/js/neutralino.js",
+    "binaryVersion": "5.3.0",
+    "clientVersion": "5.3.0"
+  },
+  "modes": {
+    "window": {
+      "title": "Pixel Drive Clock"
+    }
+  }
+}

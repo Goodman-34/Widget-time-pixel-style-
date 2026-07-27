@@ -1,19 +1,4 @@
-# Membangun installer Windows di server GitHub.
-#
-# Kenapa ada berkas ini: membangun Electron di komputer sendiri butuh RAM
-# lapang. Kalau memori sedang sesak, electron-builder bisa gagal dengan
-# "WebAssembly.Memory(): could not allocate memory" atau "Zone Allocation
-# failed". Runner GitHub selalu bersih, jadi hasilnya konsisten.
-#
-# Cara memakai:
-#   1. Buat tag versi, lalu dorong ke GitHub:
-#         git tag v1.0.0
-#         git push origin v1.0.0
-#      Installer akan dibangun dan otomatis dilampirkan ke halaman Releases.
-#
-#   2. Atau jalankan manual dari tab "Actions" -> "Build Windows installer"
-#      -> "Run workflow". Hasilnya bisa diunduh sebagai artifact.
-
+# Membangun aplikasi Native Windows (Neutralinojs) di server GitHub.
 name: Build Windows installer
 
 on:
@@ -42,55 +27,20 @@ jobs:
       - name: Pasang dependensi
         run: npm ci
 
-      - name: Periksa sprite, font, dan palet
-        run: npm run validate
+      - name: Download Neutralino Binaries
+        run: npx neu update
 
-      - name: Buat ikon
-        run: npm run icon
+      - name: Build Neutralino App
+        run: npx neu build
 
-      - name: Bangun installer dan portable
-        run: npx electron-builder --win nsis portable --publish never
-        env:
-          # Jangan cari sertifikat penandatanganan; rilis ini memang tidak
-          # ditandatangani secara digital.
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-
-      # Artefak ekstra untuk pemakai Windows 7 (dan 8/8.1): Electron 23 ke atas
-      # menghapus dukungan OS tersebut, sehingga rilis utama (Electron 43) tidak
-      # bisa berjalan di sana. Versi terakhir yang masih mendukung Windows 7
-      # adalah Electron 22 - rilis penutupnya 22.3.27 (Chromium 108, Node 16).
-      #
-      # Konsekuensi yang disadari: Chromium 108 sudah tidak menerima patch
-      # keamanan lagi (EOL sejak akhir 2023). Ini bisa diterima karena widget
-      # ini 100% offline - tidak pernah memuat konten dari jaringan, tidak ada
-      # navigasi keluar (setWindowOpenHandler menolak semuanya).
-      #
-      # Override ditulis langsung ke package.json di runner - JANGAN memakai
-      # sintaks CLI -c.x=y: electron-builder 26.15.3 menafsirkan seluruh
-      # "-c.x=y" sebagai PATH berkas konfigurasi dan gagal ENOENT (terbukti
-      # dua kali di run 30217381535 dan 30217603106). Perubahan package.json
-      # ini hanya hidup di runner dan dilakukan SETELAH build utama selesai.
-      # Hanya target portable yang dibuat supaya cuma ada SATU artefak legacy;
-      # akhiran -legacy-win7 menjaga portable utama di dist/ tidak tertimpa.
-      # Pola dist/*.exe pada langkah artifact dan Releases otomatis ikut
-      # membawa berkas ini.
-      - name: Bangun versi legacy Windows 7 (Electron 22)
+      - name: Create Portable EXE
         shell: pwsh
         run: |
-          node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync("package.json","utf8"));p.build.electronVersion="22.3.27";p.build.portable.artifactName="PixelDriveClock-${version}-legacy-win7.exe";fs.writeFileSync("package.json",JSON.stringify(p,null,2));'
-          npx electron-builder --win portable --publish never
-        env:
-          # Sama seperti build utama: tanpa penandatanganan digital.
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          cmd /c copy /b dist\PixelDriveClock\PixelDriveClock-win_x64.exe + dist\PixelDriveClock\resources.neu dist\PixelDriveClock-1.0.2-portable.exe
 
-      - name: Bangun rilis web (Zip)
+      - name: Compile Inno Setup (setup.exe)
         shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path dist -ErrorAction SilentlyContinue
-          $version = "${{ github.ref_name }}"
-          if ($version -eq "") { $version = "latest" }
-          $version = $version -replace '^v', ''
-          Compress-Archive -Path "src/renderer/*" -DestinationPath "dist/PixelDriveClock-${version}.zip" -Force
+        run: iscc setup.iss
 
       - name: Tampilkan hasil
         shell: pwsh
@@ -101,8 +51,8 @@ jobs:
         with:
           name: PixelDriveClock-windows
           path: |
-            dist/*.exe
-            dist/*.zip
+            dist/PixelDriveClock-1.0.2-setup.exe
+            dist/PixelDriveClock-1.0.2-portable.exe
           retention-days: 30
 
       - name: Lampirkan ke Releases (hanya saat ada tag)
@@ -110,7 +60,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/*.exe
-            dist/*.zip
+            dist/PixelDriveClock-1.0.2-setup.exe
+            dist/PixelDriveClock-1.0.2-portable.exe
           draft: false
           generate_release_notes: true

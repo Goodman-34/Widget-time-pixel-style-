@@ -6,12 +6,12 @@ dan penomoran versi mengikuti [Semantic Versioning](https://semver.org/lang/id/)
 
 ## [1.0.2] — 27 Juli 2026
 
-Rilis Web / Non-Electron.
+Rilis Native WebView2.
 
 ### Diubah
-- **Perombakan Arsitektur**: Menghapus dependensi Electron secara penuh untuk memangkas ukuran aplikasi dan penggunaan sumber daya. Widget kini menjadi *web-based* murni yang dapat dijalankan di browser apa saja.
-- Mengganti alur kerja lokal dari `electron .` menjadi *local server* menggunakan `serve`.
-- Distribusi versi ini menggunakan file `.zip` berisi *source code renderer* statis, siap diletakkan di server web atau dijalankan secara lokal (tidak perlu proses *installer* raksasa).
+- **Perombakan Arsitektur**: Menghapus dependensi Electron sepenuhnya dan menggantinya dengan Native WebView2 (Neutralinojs). Ukuran aplikasi kini turun drastis (hanya ~3 MB) dan sangat hemat RAM karena tidak lagi menjalankan proses background Node.js.
+- **Kompatibilitas Penuh**: Menggunakan mesin Edge WebView2, aplikasi ini mendukung versi OS mulai dari Windows 7 hingga Windows 11 tanpa perlu biner *legacy* terpisah.
+- Distribusi versi ini menggunakan file `setup.exe` dan `portable.exe` yang berukuran sangat ringan (~3MB).
 
 ## [1.0.1] — 27 Juli 2026
 
