@@ -1,6 +1,9 @@
 # Membangun installer Windows di server GitHub.
 #
-# Kenapa ada berkas ini: rilis web akan dikemas otomatis dalam bentuk zip.
+# Kenapa ada berkas ini: membangun Electron di komputer sendiri butuh RAM
+# lapang. Kalau memori sedang sesak, electron-builder bisa gagal dengan
+# "WebAssembly.Memory(): could not allocate memory" atau "Zone Allocation
+# failed". Runner GitHub selalu bersih, jadi hasilnya konsisten.
 #
 # Cara memakai:
 #   1. Buat tag versi, lalu dorong ke GitHub:
@@ -11,7 +14,7 @@
 #   2. Atau jalankan manual dari tab "Actions" -> "Build Windows installer"
 #      -> "Run workflow". Hasilnya bisa diunduh sebagai artifact.
 
-name: Build Web Release
+name: Build Windows installer
 
 on:
   push:
@@ -45,31 +48,69 @@ jobs:
       - name: Buat ikon
         run: npm run icon
 
+      - name: Bangun installer dan portable
+        run: npx electron-builder --win nsis portable --publish never
+        env:
+          # Jangan cari sertifikat penandatanganan; rilis ini memang tidak
+          # ditandatangani secara digital.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      # Artefak ekstra untuk pemakai Windows 7 (dan 8/8.1): Electron 23 ke atas
+      # menghapus dukungan OS tersebut, sehingga rilis utama (Electron 43) tidak
+      # bisa berjalan di sana. Versi terakhir yang masih mendukung Windows 7
+      # adalah Electron 22 - rilis penutupnya 22.3.27 (Chromium 108, Node 16).
+      #
+      # Konsekuensi yang disadari: Chromium 108 sudah tidak menerima patch
+      # keamanan lagi (EOL sejak akhir 2023). Ini bisa diterima karena widget
+      # ini 100% offline - tidak pernah memuat konten dari jaringan, tidak ada
+      # navigasi keluar (setWindowOpenHandler menolak semuanya).
+      #
+      # Override ditulis langsung ke package.json di runner - JANGAN memakai
+      # sintaks CLI -c.x=y: electron-builder 26.15.3 menafsirkan seluruh
+      # "-c.x=y" sebagai PATH berkas konfigurasi dan gagal ENOENT (terbukti
+      # dua kali di run 30217381535 dan 30217603106). Perubahan package.json
+      # ini hanya hidup di runner dan dilakukan SETELAH build utama selesai.
+      # Hanya target portable yang dibuat supaya cuma ada SATU artefak legacy;
+      # akhiran -legacy-win7 menjaga portable utama di dist/ tidak tertimpa.
+      # Pola dist/*.exe pada langkah artifact dan Releases otomatis ikut
+      # membawa berkas ini.
+      - name: Bangun versi legacy Windows 7 (Electron 22)
+        shell: pwsh
+        run: |
+          node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync("package.json","utf8"));p.build.electronVersion="22.3.27";p.build.portable.artifactName="PixelDriveClock-${version}-legacy-win7.exe";fs.writeFileSync("package.json",JSON.stringify(p,null,2));'
+          npx electron-builder --win portable --publish never
+        env:
+          # Sama seperti build utama: tanpa penandatanganan digital.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
       - name: Bangun rilis web (Zip)
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path dist
+          New-Item -ItemType Directory -Force -Path dist -ErrorAction SilentlyContinue
           $version = "${{ github.ref_name }}"
           if ($version -eq "") { $version = "latest" }
-          # Hapus 'v' awalan jika ada
           $version = $version -replace '^v', ''
           Compress-Archive -Path "src/renderer/*" -DestinationPath "dist/PixelDriveClock-${version}.zip" -Force
 
       - name: Tampilkan hasil
         shell: pwsh
-        run: Get-ChildItem dist -Filter *.zip | Select-Object Name, @{n='MB';e={[math]::Round($_.Length/1MB,2)}}
+        run: Get-ChildItem dist -Filter *.exe | Select-Object Name, @{n='MB';e={[math]::Round($_.Length/1MB,2)}}
 
       - name: Simpan sebagai artifact
         uses: actions/upload-artifact@v4
         with:
-          name: PixelDriveClock-web
-          path: dist/*.zip
+          name: PixelDriveClock-windows
+          path: |
+            dist/*.exe
+            dist/*.zip
           retention-days: 30
 
       - name: Lampirkan ke Releases (hanya saat ada tag)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/*.zip
+          files: |
+            dist/*.exe
+            dist/*.zip
           draft: false
           generate_release_notes: true
